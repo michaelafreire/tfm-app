@@ -1,9 +1,50 @@
 import { Box, Typography } from '@mui/material';
 import experimentImage from '../assets/experiment.png';
-import { Link } from "react-router-dom";
 import ColorButton from '../components/ColorButton';
+import ProgressBar from '../components/ProgressBar/ProgressBar';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import FormSpace from '../components/Form/FormSpace';
+
+type Question = {
+  id: string;
+  label: string;
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+};
+
+type Step = {
+  id: string;
+  label: string;
+  question: Question[];
+};
 
 function Post() {
+  const steps: Step[] = [
+    { id: '1',
+      label: 'Cognitive Test',
+      question: [
+        { id: '1-1', label: 'Stress levels?', type: 'multiple-choice' },
+        { id: '1-2', label: 'Why?', type: 'text' },
+      ]},
+    { id: '2',
+      label: 'Next Steps',
+      question: [
+        { id: '2-1', label: 'Should we keep in touch?', type: 'checkbox' },
+      ] },
+  ];
+
+    const [currentStep, setCurrentStep] = useState<number>(0);
+
+    const navigate = useNavigate();
+
+    const handleNext = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1); // move to next step
+    } else {
+      navigate('/final'); // if last step, go to next page
+    }
+    };
+
   return (
     <Box
       sx={{
@@ -26,6 +67,7 @@ function Post() {
         <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
           Post-experiment Questions
         </Typography>
+        <ProgressBar steps={steps} currentStep={currentStep}/>
       </Box>
       <Box sx={{
         bgcolor: "secondary.paper",
@@ -40,7 +82,7 @@ function Post() {
         <Box sx={{
           flex: 4,
         }}>
-          <Typography>Insert Questionnaires Here</Typography>
+          <FormSpace steps={steps} currentStep={currentStep}/>
         </Box>
         <Box sx={{
           flex: 1,
@@ -49,11 +91,10 @@ function Post() {
           justifyContent: "flex-end",
           alignItems: "flex-end",
         }}>
-          <Link to="/post">
-            <ColorButton
-              name="Next"
-            />
-          </Link>
+          <ColorButton
+            name="Next"
+            onClick={handleNext}
+          />
         </Box>
       </Box>
     </Box>

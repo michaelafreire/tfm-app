@@ -1,9 +1,55 @@
 import { Box, Typography } from '@mui/material';
 import experimentImage from '../assets/experiment.png';
-import { Link } from "react-router-dom";
 import ColorButton from '../components/ColorButton';
+import ProgressBar from '../components/ProgressBar/ProgressBar';
+import FormSpace from '../components/Form/FormSpace';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+type Question = {
+  id: string;
+  label: string;
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' ;
+};
+
+type Step = {
+  id: string;
+  label: string;
+  question: Question[];
+};
 
 function Pre() {
+  const steps: Step[] = [
+    { id: '1',
+      label: 'Consent Form',
+      question: [
+        { id: '1-1', label: 'Do you consent to participate in this experiment?', type: 'checkbox' },
+        { id: '1-2', label: 'Please provide your initials:', type: 'text' },
+      ]},
+    { id: '2',
+      label: 'About you',
+      question: [
+        { id: '2-1', label: 'What is your age?', type: 'number' },
+      ] },
+    { id: '3',
+      label: 'Cognitive Test',
+      question: [
+        { id: '3-1', label: 'Have you taken a cognitive test before?', type: 'multiple-choice' },
+      ] },
+  ];
+
+  const [currentStep, setCurrentStep] = useState<number>(0);
+
+  const navigate = useNavigate();
+
+  const handleNext = () => {
+  if (currentStep < steps.length - 1) {
+    setCurrentStep(prev => prev + 1); // move to next step
+  } else {
+    navigate('/experience'); // if last step, go to next page
+  }
+  };
+
   return (
     <Box
       sx={{
@@ -26,6 +72,7 @@ function Pre() {
         <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
           Pre-experiment Questions
         </Typography>
+        <ProgressBar steps={steps} currentStep={currentStep}/>
       </Box>
       <Box sx={{
         bgcolor: "secondary.paper",
@@ -40,7 +87,7 @@ function Pre() {
         <Box sx={{
           flex: 4,
         }}>
-          <Typography>Insert Questionnaires Here</Typography>
+          <FormSpace steps={steps} currentStep={currentStep}/>
         </Box>
         <Box sx={{
           flex: 1,
@@ -49,11 +96,10 @@ function Pre() {
           justifyContent: "flex-end",
           alignItems: "flex-end",
         }}>
-          <Link to="/experience">
-            <ColorButton
-              name="Next"
-            />
-          </Link>
+          <ColorButton
+            name="Next"
+            onClick={handleNext}
+          />
         </Box>
       </Box>
     </Box>
