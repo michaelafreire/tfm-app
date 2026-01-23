@@ -2,14 +2,19 @@ import { Box, Typography } from '@mui/material';
 import experimentImage from '../assets/experiment.png';
 import ColorButton from '../components/ColorButton';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
+import FormSpace from '../components/Form/FormSpace';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FormSpace from '../components/Form/FormSpace';
+import { useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
+
 
 type Question = {
   id: string;
   label: string;
   type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 type Step = {
@@ -19,31 +24,67 @@ type Step = {
 };
 
 function Post() {
+  const location = useLocation();
+  const participantCode = location.state?.participantCode;
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const navigate = useNavigate();
+  const [feelings, setFeelings] = useState("");
+
+  if (!participantCode) {
+    return <div>Invalid access. Please restart the experiment.</div>;
+  }
+
+  async function savePostResponses() {
+    return supabase.from("responses").insert([
+      {
+        participant_code: participantCode,
+        phase: "post",
+        feelings: feelings,
+        // Add other responses here
+      }
+    ]);
+  }
+
   const steps: Step[] = [
-    { id: '1',
+    {
+      id: '1',
       label: 'Cognitive Test',
       question: [
-        { id: '1-1', label: 'Stress levels?', type: 'multiple-choice' },
-        { id: '1-2', label: 'Why?', type: 'text' },
-      ]},
-    { id: '2',
+        { id: '1-1',
+          label: 'Stress levels?',
+          type: 'multiple-choice' },
+        { id: '1-2',
+          label: 'How do you feel?',
+          type: 'text',
+          value: feelings,
+          onChange: (e) => setFeelings(e.target.value)
+        },
+      ]
+    },
+    {
+      id: '2',
       label: 'Next Steps',
       question: [
         { id: '2-1', label: 'Should we keep in touch?', type: 'checkbox' },
-      ] },
+      ]
+    },
   ];
 
-    const [currentStep, setCurrentStep] = useState<number>(0);
-
-    const navigate = useNavigate();
-
-    const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1); // move to next step
+      setCurrentStep(prev => prev + 1);
     } else {
-      navigate('/final'); // if last step, go to next page
+      const { error } = await savePostResponses();
+
+      if (error) {
+        console.error(error);
+        alert("There was a problem saving your answers. Please contact the researcher.");
+        return;
+      }
+
+      navigate('/final', { state: { participantCode } });
     }
-    };
+  };
 
   return (
     <Box
@@ -67,7 +108,7 @@ function Post() {
         <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
           Post-experiment Questions
         </Typography>
-        <ProgressBar steps={steps} currentStep={currentStep}/>
+        <ProgressBar steps={steps} currentStep={currentStep} />
       </Box>
       <Box sx={{
         bgcolor: "secondary.paper",
@@ -82,7 +123,7 @@ function Post() {
         <Box sx={{
           flex: 4,
         }}>
-          <FormSpace steps={steps} currentStep={currentStep}/>
+          <FormSpace steps={steps} currentStep={currentStep} />
         </Box>
         <Box sx={{
           flex: 1,
@@ -93,6 +134,7 @@ function Post() {
         }}>
           <ColorButton
             name="Next"
+            disabled={false}
             onClick={handleNext}
           />
         </Box>

@@ -3,8 +3,14 @@ import { Link } from "react-router-dom";
 import ColorButton from '../components/ColorButton';
 import introImage from '../assets/intro.png';
 import experimentImage from '../assets/experiment.png';
+import TextField from '@mui/material/TextField';
+import { useState } from "react";
 
 function Intro() {
+  const [participantCode, setParticipantCode] = useState("");
+
+  const normalizedCode = participantCode.trim().toUpperCase();
+
   return (
     <Box
       sx={{
@@ -36,7 +42,7 @@ function Intro() {
           </Typography>
         </Box>
         <Box sx={{
-          marginTop: {xs: 1, md: 2},
+          marginTop: { xs: 1, md: 2 },
           flex: 1,
           color: "text.primary",
           paddingRight: 4,
@@ -69,11 +75,28 @@ function Intro() {
           justifyContent: "flex-end",
           alignItems: "flex-end",
         }}>
-          <Link to="/pre">
-            <ColorButton
-              name="Start Experiment"
-            />
-          </Link>
+          <TextField
+            required
+            id="outlined-basic"
+            label="Participant Code"
+            variant="outlined"
+            value={participantCode}
+            onChange={(e) => { setParticipantCode(e.target.value) }}
+            sx={{ marginRight: 2 }}
+          />
+            {participantCode ? (
+              <Link to="/pre" state={{ participantCode: normalizedCode }}>
+                <ColorButton
+                  name="Start Experiment"
+                  disabled={false}
+                />
+              </Link>
+            ) : (
+              <ColorButton
+                name="Start Experiment"
+                disabled
+              />
+            )}
         </Box>
       </Box>
       <Box sx={{

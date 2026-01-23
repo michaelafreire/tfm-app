@@ -5,11 +5,15 @@ import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 type Question = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' ;
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 type Step = {
@@ -19,36 +23,86 @@ type Step = {
 };
 
 function Pre() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const participantCode = location.state?.participantCode;
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [initials, setInitials] = useState("");
+
+  if (!participantCode) {
+    return <div>Invalid access. Please restart the experiment.</div>;
+  }
+
+  async function savePreResponses() {
+    return supabase.from("responses").insert([
+      {
+        participant_code: participantCode,
+        phase: "pre",
+        initials: initials,
+        // Add other responses here
+      }
+    ]);
+  }
+
   const steps: Step[] = [
-    { id: '1',
+    {
+      id: '1',
       label: 'Consent Form',
       question: [
-        { id: '1-1', label: 'Do you consent to participate in this experiment?', type: 'checkbox' },
-        { id: '1-2', label: 'Please provide your initials:', type: 'text' },
-      ]},
-    { id: '2',
+        {
+          id: '1-1',
+          label: 'Do you consent to participate in this experiment?',
+          type: 'checkbox'
+        },
+        {
+          id: '1-2',
+          label: 'Please provide your initials:',
+          type: 'text',
+          value: initials,
+          onChange: (e) => setInitials(e.target.value),
+        },
+      ]
+    },
+    {
+      id: '2',
       label: 'About you',
       question: [
-        { id: '2-1', label: 'What is your age?', type: 'number' },
-      ] },
-    { id: '3',
+        {
+          id: '2-1',
+          label: 'What is your age?',
+          type: 'number'
+        },
+      ]
+    },
+    {
+      id: '3',
       label: 'Cognitive Test',
       question: [
-        { id: '3-1', label: 'Have you taken a cognitive test before?', type: 'multiple-choice' },
-      ] },
+        {
+          id: '3-1',
+          label: 'Have you taken a cognitive test before?',
+          type: 'multiple-choice'
+        },
+      ]
+    },
   ];
 
-  const [currentStep, setCurrentStep] = useState<number>(0);
+  const handleNext = async () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      const { error } = await savePreResponses();
 
-  const navigate = useNavigate();
+      if (error) {
+        console.error(error);
+        alert("There was a problem saving your answers. Please contact the researcher.");
+        return;
+      }
 
-  const handleNext = () => {
-  if (currentStep < steps.length - 1) {
-    setCurrentStep(prev => prev + 1); // move to next step
-  } else {
-    navigate('/experience'); // if last step, go to next page
-  }
+      navigate('/experience', { state: { participantCode } });
+    }
   };
+
 
   return (
     <Box
@@ -72,7 +126,7 @@ function Pre() {
         <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
           Pre-experiment Questions
         </Typography>
-        <ProgressBar steps={steps} currentStep={currentStep}/>
+        <ProgressBar steps={steps} currentStep={currentStep} />
       </Box>
       <Box sx={{
         bgcolor: "secondary.paper",
@@ -87,7 +141,7 @@ function Pre() {
         <Box sx={{
           flex: 4,
         }}>
-          <FormSpace steps={steps} currentStep={currentStep}/>
+          <FormSpace steps={steps} currentStep={currentStep} />
         </Box>
         <Box sx={{
           flex: 1,
@@ -98,6 +152,7 @@ function Pre() {
         }}>
           <ColorButton
             name="Next"
+            disabled={false}
             onClick={handleNext}
           />
         </Box>

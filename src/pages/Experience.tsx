@@ -1,8 +1,16 @@
 import { Box, Typography } from '@mui/material';
 import { Link } from "react-router-dom";
 import ColorButton from '../components/ColorButton';
+import { useLocation } from "react-router-dom";
 
 function Experience() {
+  const location = useLocation();
+  const participantCode = location.state?.participantCode;
+
+  if (!participantCode) {
+    return <div>Invalid access. Please restart the experiment.</div>;
+  }
+
   return (
     <Box
       sx={{
@@ -34,9 +42,10 @@ function Experience() {
             justifyContent: "flex-end",
             alignItems: "flex-end",
           }}>
-            <Link to="/post">
+            <Link to="/post" state={{ participantCode }}>
               <ColorButton
                 name="Next"
+                disabled={false}
               />
             </Link>
           </Box>

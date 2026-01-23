@@ -1,12 +1,24 @@
 import Button from '@mui/material/Button';
 
-export default function ColorButton(props: { name: string, onClick?: () => void }) {
+export default function ColorButton(props: {
+  name: string;
+  disabled: boolean;
+  onClick?: () => void;
+}) {
   return (
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={props.onClick}>
-        {props.name}
-      </Button>
+    <Button
+      variant="contained"
+      color="primary"
+      disabled={props.disabled}
+      onClick={props.onClick}
+      sx={{
+        '&.Mui-disabled': {
+          bgcolor: 'grey.400',
+          color: 'grey.700',
+        },
+      }}
+    >
+      {props.name}
+    </Button>
   );
 }

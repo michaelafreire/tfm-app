@@ -12,6 +12,8 @@ type Question = {
   id: string;
   label: string;
   type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 type FormQuestionProps = {
@@ -35,6 +37,8 @@ function FormQuestion({ question }: FormQuestionProps) {
               required id="outlined-basic"
               label="Required"
               variant="outlined"
+              value={q.value}
+              onChange={q.onChange}
             />
           }
           {q.type === "number" && (
