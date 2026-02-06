@@ -77,26 +77,29 @@ function Intro() {
         }}>
           <TextField
             required
+            size = "small"
             id="outlined-basic"
             label="Participant Code"
             variant="outlined"
             value={participantCode}
             onChange={(e) => { setParticipantCode(e.target.value) }}
-            sx={{ marginRight: 2 }}
+            sx={{
+              marginRight: 2,
+            }}
           />
-            {participantCode ? (
-              <Link to="/pre" state={{ participantCode: normalizedCode }}>
-                <ColorButton
-                  name="Start Experiment"
-                  disabled={false}
-                />
-              </Link>
-            ) : (
+          {participantCode ? (
+            <Link to="/pre" state={{ participantCode: normalizedCode }}>
               <ColorButton
                 name="Start Experiment"
-                disabled
+                disabled={false}
               />
-            )}
+            </Link>
+          ) : (
+            <ColorButton
+              name="Start Experiment"
+              disabled
+            />
+          )}
         </Box>
       </Box>
       <Box sx={{

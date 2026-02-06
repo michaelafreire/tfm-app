@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+type Choice = string
 
 type Question = {
   id: string;
@@ -15,11 +16,13 @@ type Question = {
   type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  choice?: Choice[];
 };
 
 type Step = {
   id: string;
   label: string;
+  description: string;
   question: Question[];
 };
 
@@ -49,11 +52,15 @@ function Post() {
     {
       id: '1',
       label: 'Cognitive Test',
+      description: 'Please answer the following questions about your experience during the experiment.',
       question: [
-        { id: '1-1',
+        {
+          id: '1-1',
           label: 'Stress levels?',
-          type: 'multiple-choice' },
-        { id: '1-2',
+          type: 'multiple-choice'
+        },
+        {
+          id: '1-2',
           label: 'How do you feel?',
           type: 'text',
           value: feelings,
@@ -64,6 +71,7 @@ function Post() {
     {
       id: '2',
       label: 'Next Steps',
+      description: 'Thank you for participating! Please click "Next" to complete the experiment and receive further instructions.',
       question: [
         { id: '2-1', label: 'Should we keep in touch?', type: 'checkbox' },
       ]
@@ -116,12 +124,30 @@ function Post() {
         p: 3,
         flex: 3,
         height: { xs: "auto", md: "100%" },
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
       }}>
         <Box sx={{
           flex: 4,
+          overflowY: 'auto',
+          minHeight: 0,
+          position: 'relative',
+          // Custom scrollbar styling for WebKit and Firefox
+          '&::-webkit-scrollbar': {
+            width: 8,
+            height: 8,
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(0,0,0,0.25)',
+            borderRadius: 4,
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          scrollbarWidth: 'thin', // Firefox
+          scrollbarColor: 'rgba(0,0,0,0.25) transparent', // Firefox
         }}>
           <FormSpace steps={steps} currentStep={currentStep} />
         </Box>
