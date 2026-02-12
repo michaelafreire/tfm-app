@@ -1,6 +1,5 @@
 import { Box, Typography } from '@mui/material';
-// import thankYouImage from '../assets/thank_you.png';
-import experimentImage from '../assets/experiment.png';
+import finalImage from '../assets/final.png';
 
 function Final() {
   return (
@@ -22,9 +21,10 @@ function Final() {
         justifyContent: "center",
         alignItems: "center",
       }}>
-        <img src={experimentImage} style={{ width: 200, height: 200 }} />
-        <Typography variant="body2">
-          Thank you text.
+        <img src={finalImage} style={{ width: 250, height: 250 }} />
+        <Typography variant="body2" align='center'>
+          <span style={{ display: 'inline-block', fontWeight: "bold", color: "#3ba195", marginBottom: 4, fontSize: 15 }}>Thank you for participating!</span><br />
+          Your time and contribution are greatly appreciated.
         </Typography>
       </Box>
     </Box>

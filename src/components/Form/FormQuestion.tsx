@@ -17,6 +17,7 @@ type Question = {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   choice?: Choice[];
+  required?: boolean;
 };
 
 type FormQuestionProps = {
@@ -40,7 +41,8 @@ function FormQuestion({ question }: FormQuestionProps) {
           </Typography>
           {q.type === "text" &&
             <TextField
-              required id="outlined-basic"
+              required={q.required}
+              id="outlined-basic"
               label="Required"
               variant="outlined"
               value={q.value}
@@ -50,9 +52,9 @@ function FormQuestion({ question }: FormQuestionProps) {
           }
           {q.type === "number" && (
             <TextField
-              required
+              required={q.required}
               id='outlined-number'
-              label="Required"
+              label=""
               variant="outlined"
               type="number"
               size="small"
@@ -61,10 +63,13 @@ function FormQuestion({ question }: FormQuestionProps) {
           )}
           {q.type === "checkbox" &&
             <FormGroup>
-              <FormControlLabel required control={<Checkbox />} label="Required" />
+              <FormControlLabel
+              required={q.required}
+              control={<Checkbox />}
+              label="" />
             </FormGroup>
           }
-          {q.type === "multiple-choice" && <FormControl>
+          {q.type === "multiple-choice" && <FormControl required={q.required} component="fieldset" variant="standard">
             <RadioGroup
               row
               value={q.value || ""}

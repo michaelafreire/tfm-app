@@ -4,12 +4,48 @@ import ColorButton from '../components/ColorButton';
 import introImage from '../assets/intro.png';
 import experimentImage from '../assets/experiment.png';
 import TextField from '@mui/material/TextField';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+
+async function checkIfSurveyExists(participant_code: string, phase: string) {
+  const { data, error } = await supabase.rpc(
+    "is_code_available",
+    {
+      input_code: participant_code,
+      input_phase: phase,
+    }
+  );
+  if (error) {
+    console.error(error)
+    return false
+  }
+  console.log("RPC result:", data);
+  return data;
+}
 
 function Intro() {
   const [participantCode, setParticipantCode] = useState("");
-
   const normalizedCode = participantCode.trim().toUpperCase();
+  const [exists, setExists] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    if (!normalizedCode) {
+      setExists(null);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const timeout = setTimeout(async () => {
+      const result = await checkIfSurveyExists(normalizedCode, "pre");
+      if (!isCancelled) setExists(result);
+    }, 400);
+
+    return () => {
+      clearTimeout(timeout);
+      isCancelled = true;
+    };
+  }, [normalizedCode]);
 
   return (
     <Box
@@ -77,17 +113,15 @@ function Intro() {
         }}>
           <TextField
             required
-            size = "small"
+            size="small"
             id="outlined-basic"
             label="Participant Code"
             variant="outlined"
             value={participantCode}
-            onChange={(e) => { setParticipantCode(e.target.value) }}
-            sx={{
-              marginRight: 2,
-            }}
+            onChange={(e) => setParticipantCode(e.target.value)}
+            sx={{ marginRight: 2 }}
           />
-          {participantCode ? (
+          {exists === true ? (
             <Link to="/pre" state={{ participantCode: normalizedCode }}>
               <ColorButton
                 name="Start Experiment"

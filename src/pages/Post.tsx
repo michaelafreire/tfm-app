@@ -17,6 +17,7 @@ type Question = {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   choice?: Choice[];
+  required?: boolean;
 };
 
 type Step = {
@@ -64,7 +65,8 @@ function Post() {
           label: 'How do you feel?',
           type: 'text',
           value: feelings,
-          onChange: (e) => setFeelings(e.target.value)
+          onChange: (e) => setFeelings(e.target.value),
+          required: true,
         },
       ]
     },
@@ -92,6 +94,14 @@ function Post() {
 
       navigate('/final', { state: { participantCode } });
     }
+  };
+
+    const isNextDisabled = () => {
+    const step = steps[currentStep];
+    if (!step) return false;
+    return step.question.some(
+      q => q.required && (!q.value || q.value === '')
+    );
   };
 
   return (
@@ -160,7 +170,7 @@ function Post() {
         }}>
           <ColorButton
             name="Next"
-            disabled={false}
+            disabled={isNextDisabled()}
             onClick={handleNext}
           />
         </Box>

@@ -17,6 +17,7 @@ type Question = {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   choice?: Choice[];
+  required?: boolean;
 };
 
 type Step = {
@@ -68,7 +69,7 @@ function Pre() {
         {
           id: '1-1',
           label: 'Do you consent to participate in this experiment?',
-          type: 'checkbox'
+          type: 'checkbox',
         },
         {
           id: '1-2',
@@ -76,6 +77,7 @@ function Pre() {
           type: 'text',
           value: initials,
           onChange: (e) => setInitials(e.target.value),
+          required: true,
         },
       ]
     },
@@ -164,6 +166,14 @@ function Pre() {
     }
   };
 
+  const isNextDisabled = () => {
+    const step = steps[currentStep];
+    if (!step) return false;
+    return step.question.some(
+      q => q.required && (!q.value || q.value === '')
+    );
+  };
+
 
   return (
     <Box
@@ -231,7 +241,7 @@ function Pre() {
         }}>
           <ColorButton
             name="Next"
-            disabled={false}
+            disabled={isNextDisabled()}
             onClick={handleNext}
           />
         </Box>
