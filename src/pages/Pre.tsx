@@ -157,8 +157,11 @@ function Pre() {
       const { error } = await savePreResponses();
 
       if (error) {
-        console.error(error);
-        alert("There was a problem saving your answers. Please contact the researcher.");
+        if (error.code === "23505") {
+          alert("This participant code has already completed this phase.");
+        } else {
+          alert("There was a problem saving your answers. Please contact the researcher.");
+        }
         return;
       }
 
