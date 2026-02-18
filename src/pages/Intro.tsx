@@ -1,15 +1,42 @@
 import { Box, Typography } from '@mui/material';
-import { Link } from "react-router-dom";
 import ColorButton from '../components/ColorButton';
 import introImage from '../assets/intro.png';
 import experimentImage from '../assets/experiment.png';
 import TextField from '@mui/material/TextField';
 import { useState } from "react";
-
+import { supabase } from "../supabaseClient";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function Intro() {
-  const [participantCode, setParticipantCode] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [participantCode, setParticipantCode] = useState(
+    location.state?.participantCode ?? ""
+  );
   const normalizedCode = participantCode.trim().toUpperCase();
+
+  async function savePreResponses() {
+    return supabase.from("responses").insert([
+      {
+        participant_code: normalizedCode,
+        phase: "login",
+      }
+    ]);
+  }
+
+  const handleNext = async () => {
+    const { error } = await savePreResponses();
+    if (error) {
+      if (error.code === "23505") {
+        alert("This participant code has been used.");
+      } else {
+        alert("There was a problem saving your answers. Please contact the researcher.");
+      }
+      return;
+    }
+    navigate("/pre", { state: { participantCode: normalizedCode } });
+  };
 
   return (
     <Box
@@ -86,12 +113,11 @@ function Intro() {
             sx={{ marginRight: 2 }}
           />
           {participantCode ? (
-            <Link to="/pre" state={{ participantCode: normalizedCode }}>
               <ColorButton
                 name="Start Experiment"
                 disabled={false}
+                onClick={handleNext}
               />
-            </Link>
           ) : (
             <ColorButton
               name="Start Experiment"
