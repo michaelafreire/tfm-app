@@ -22,12 +22,25 @@ function ExperienceB() {
 
   const steps: Step[] = rawSteps.map(step => ({
     ...step,
-    question: step.question.map(q => ({
-      ...q,
-      value: answers[q.id] || "",
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
-        handleChange(q.id, e.target.value)
-    }))
+    question: step.question.map(q => {
+      if (q.type === 'likert-group') {
+        return {
+          ...q,
+          likertRows: q.likertRows?.map((row) => ({
+            ...row,
+            value: answers[row.id] || "",
+          })),
+          onMatrixChange: (rowId: string, value: string) => handleChange(rowId, value),
+        };
+      }
+
+      return {
+        ...q,
+        value: answers[q.id] || "",
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+          handleChange(q.id, e.target.value)
+      };
+    })
   }));
 
   useEffect(() => {
@@ -92,7 +105,15 @@ function ExperienceB() {
     const step = steps[currentStep];
     if (!step) return false;
     return step.question.some(
-      q => q.required && (!q.value || q.value === '')
+      (q) => {
+        if (!q.required) return false;
+
+        if (q.type === 'likert-group') {
+          return q.likertRows?.some((row) => !row.value || row.value === '') ?? true;
+        }
+
+        return !q.value || q.value === '';
+      }
     );
   };
 

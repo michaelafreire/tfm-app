@@ -2,13 +2,28 @@
 
 type Choice = string;
 
-export type Question = {
+type LikertRow = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  value?: string;
+};
+
+type Question = {
+  id: string;
+  label: string;
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' | 'date' | 'likert-group';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDateChange?: (value: string) => void;
   choice?: Choice[];
+
+  // Likert additions
+  likertRows?: LikertRow[];
+  likertLabels?: string[];
+  likertMinLabel?: string;
+  likertMaxLabel?: string;
+  onMatrixChange?: (rowId: string, value: string) => void;
+
   required?: boolean;
 };
 
@@ -215,6 +230,31 @@ export const stepsByGroup: Record<number, Step[]> = {
         },
       ]
     },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E1_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E1_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E1_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E1_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E1_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E1_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E1_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E1_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E1_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E1_IMI_Q9', label: "9. This material was fun to read." }
+          ],
+          required: true
+        },
+      ]
+    },
   ],
 
   2: [
@@ -259,7 +299,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       question: [
         {
           id: 'E1_R1_Q1',
-          label:`
+          label: `
 
 
           <strong>Answer the following questions:</strong>
@@ -381,7 +421,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       question: [
         {
           id: 'E1_R3_Q1',
-          label:`
+          label: `
 
 
           <strong>Answer the following questions:</strong>
@@ -411,6 +451,31 @@ export const stepsByGroup: Record<number, Step[]> = {
           label: "4. One of the UN's targets for 2030 is to ...",
           type: 'multiple-choice',
           choice: ["end poverty", "increase life expectancy", "make population levels stable"],
+          required: true
+        },
+      ]
+    },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E1_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E1_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E1_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E1_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E1_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E1_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E1_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E1_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E1_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E1_IMI_Q9', label: "9. This material was fun to read." }
+          ],
           required: true
         },
       ]
@@ -450,7 +515,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E2_R1_Q1',
+          id: 'E1_R1_Q1',
           label: `
 
 
@@ -463,21 +528,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R1_Q2',
+          id: 'E1_R1_Q2',
           label: '2. If you are not sure how to address someone, you should …',
           type: 'multiple-choice',
           choice: ["use the title you see on their business card", "make your decision based on cultural stereotypes about their country", "address them the way you'd like to be addressed", "ask them what they would like you to call them"],
           required: true
         },
         {
-          id: 'E2_R1_Q3',
+          id: 'E1_R1_Q3',
           label: '3. There might be a misunderstanding if an American smiles at a Russian business associate because the Russian might think that the American is ...',
           type: 'multiple-choice',
           choice: ["being fake", "challenging their authority", "trying to break the ice", "disrespectful"],
           required: true
         },
         {
-          id: 'E2_R1_Q4',
+          id: 'E1_R1_Q4',
           label: '4. The Japanese, South Koreans and Iranians might interpret a smiling face as being …',
           type: 'multiple-choice',
           choice: ["friendlier", "less open", "not as inteligent", "dishonest"],
@@ -511,7 +576,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       `,
       question: [
         {
-          id: 'E2_R2_Q1',
+          id: 'E1_R2_Q1',
           label: `
 
 
@@ -524,21 +589,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R2_Q2',
+          id: 'E1_R2_Q2',
           label: '2. Kilian Jornet is unlike most Everest climbers because …',
           type: 'multiple-choice',
           choice: ["he is a professional climber", "he ascended faster", "he found the climb difficult", "all of the above"],
           required: true
         },
         {
-          id: 'E2_R2_Q3',
+          id: 'E1_R2_Q3',
           label: '3. In his training now, Kilian …',
           type: 'multiple-choice',
           choice: ["demands a lot of himself", "takes a lot of rest periods", "uses a coach", "none of the above"],
           required: true
         },
         {
-          id: 'E2_R2_Q4',
+          id: 'E1_R2_Q4',
           label: '4. Kilian partly owes his incredible fitness to …',
           type: 'multiple-choice',
           choice: ["the way he makes extra time for sleep", "his ability to recover from injury", "where he grew up", "all of the above"],
@@ -568,7 +633,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     `,
       question: [
         {
-          id: 'E2_R3_Q1',
+          id: 'E1_R3_Q1',
           label: `
 
 
@@ -581,26 +646,51 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R3_Q2',
+          id: 'E1_R3_Q2',
           label: '2. This is not the first study to suggest that life existed on Mars in the past.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         },
         {
-          id: 'E2_R3_Q3',
+          id: 'E1_R3_Q3',
           label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         },
         {
-          id: 'E2_R3_Q4',
+          id: 'E1_R3_Q4',
           label: '4. It is believed that this conclusively proves that there was once life on the planet.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         }
+      ]
+    },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E1_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E1_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E1_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E1_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E1_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E1_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E1_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E1_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E1_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E1_IMI_Q9', label: "9. This material was fun to read." }
+          ],
+          required: true
+        },
       ]
     },
   ],
@@ -638,7 +728,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E2_R1_Q1',
+          id: 'E1_R1_Q1',
           label: `
 
 
@@ -651,21 +741,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R1_Q2',
+          id: 'E1_R1_Q2',
           label: '2. If you are not sure how to address someone, you should …',
           type: 'multiple-choice',
           choice: ["use the title you see on their business card", "make your decision based on cultural stereotypes about their country", "address them the way you'd like to be addressed", "ask them what they would like you to call them"],
           required: true
         },
         {
-          id: 'E2_R1_Q3',
+          id: 'E1_R1_Q3',
           label: '3. There might be a misunderstanding if an American smiles at a Russian business associate because the Russian might think that the American is ...',
           type: 'multiple-choice',
           choice: ["being fake", "challenging their authority", "trying to break the ice", "disrespectful"],
           required: true
         },
         {
-          id: 'E2_R1_Q4',
+          id: 'E1_R1_Q4',
           label: '4. The Japanese, South Koreans and Iranians might interpret a smiling face as being …',
           type: 'multiple-choice',
           choice: ["friendlier", "less open", "not as inteligent", "dishonest"],
@@ -699,7 +789,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       `,
       question: [
         {
-          id: 'E2_R2_Q1',
+          id: 'E1_R2_Q1',
           label: `
 
 
@@ -712,21 +802,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R2_Q2',
+          id: 'E1_R2_Q2',
           label: '2. Kilian Jornet is unlike most Everest climbers because …',
           type: 'multiple-choice',
           choice: ["he is a professional climber", "he ascended faster", "he found the climb difficult", "all of the above"],
           required: true
         },
         {
-          id: 'E2_R2_Q3',
+          id: 'E1_R2_Q3',
           label: '3. In his training now, Kilian …',
           type: 'multiple-choice',
           choice: ["demands a lot of himself", "takes a lot of rest periods", "uses a coach", "none of the above"],
           required: true
         },
         {
-          id: 'E2_R2_Q4',
+          id: 'E1_R2_Q4',
           label: '4. Kilian partly owes his incredible fitness to …',
           type: 'multiple-choice',
           choice: ["the way he makes extra time for sleep", "his ability to recover from injury", "where he grew up", "all of the above"],
@@ -756,7 +846,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     `,
       question: [
         {
-          id: 'E2_R3_Q1',
+          id: 'E1_R3_Q1',
           label: `
 
 
@@ -769,26 +859,51 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E2_R3_Q2',
+          id: 'E1_R3_Q2',
           label: '2. This is not the first study to suggest that life existed on Mars in the past.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         },
         {
-          id: 'E2_R3_Q3',
+          id: 'E1_R3_Q3',
           label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         },
         {
-          id: 'E2_R3_Q4',
+          id: 'E1_R3_Q4',
           label: '4. It is believed that this conclusively proves that there was once life on the planet.',
           type: 'multiple-choice',
           choice: ["True", "False", "Not Given"],
           required: true
         }
+      ]
+    },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E1_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E1_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E1_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E1_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E1_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E1_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E1_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E1_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E1_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E1_IMI_Q9', label: "9. This material was fun to read." }
+          ],
+          required: true
+        },
       ]
     },
   ],

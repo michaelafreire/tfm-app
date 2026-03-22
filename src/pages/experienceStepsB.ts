@@ -2,13 +2,28 @@
 
 type Choice = string;
 
-export type Question = {
+type LikertRow = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  value?: string;
+};
+
+type Question = {
+  id: string;
+  label: string;
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' | 'date' | 'likert-group';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDateChange?: (value: string) => void;
   choice?: Choice[];
+
+  // Likert additions
+  likertRows?: LikertRow[];
+  likertLabels?: string[];
+  likertMinLabel?: string;
+  likertMaxLabel?: string;
+  onMatrixChange?: (rowId: string, value: string) => void;
+
   required?: boolean;
 };
 
@@ -207,6 +222,31 @@ export const stepsByGroup: Record<number, Step[]> = {
         }
       ]
     },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E2_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E2_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E2_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E2_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E2_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E2_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E2_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E2_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E2_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E2_IMI_Q9', label: "9. This material was fun to read." }
+          ],
+          required: true
+        },
+      ]
+    },
   ],
 
   2: [
@@ -394,6 +434,31 @@ export const stepsByGroup: Record<number, Step[]> = {
         }
       ]
     },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E2_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E2_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E2_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E2_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E2_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E2_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E2_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E2_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E2_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E2_IMI_Q9', label: "9. This material was fun to read." }
+          ],
+          required: true
+        },
+      ]
+    },
   ],
 
   3: [
@@ -437,7 +502,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E1_R1_Q1',
+          id: 'E2_R1_Q1',
           label: `
 
 
@@ -450,21 +515,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R1_Q2',
+          id: 'E2_R1_Q2',
           label: '2. Which book covers a long period of human history?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
           required: true
         },
         {
-          id: 'E1_R1_Q3',
+          id: 'E2_R1_Q3',
           label: '3. Which book claims that human intuition negatively affects the way people think about the world?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
           required: true
         },
         {
-          id: 'E1_R1_Q4',
+          id: 'E2_R1_Q4',
           label: '4. Which book says that current establishments are under threat from politics?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
@@ -502,7 +567,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E1_R2_Q1',
+          id: 'E2_R2_Q1',
           label: `
 
 
@@ -515,21 +580,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R2_Q2',
+          id: 'E2_R2_Q2',
           label: '2. The grammar of dolphin language follows the same rules as human language.',
           type: 'multiple-choice',
           choice: ["True", "False"],
           required: true
         },
         {
-          id: 'E1_R2_Q3',
+          id: 'E2_R2_Q3',
           label: '3. Brain size is not the only factor in determining language capability.',
           type: 'multiple-choice',
           choice: ["True", "False"],
           required: true
         },
         {
-          id: 'E1_R2_Q4',
+          id: 'E2_R2_Q4',
           label: '4. The language of very young children has something in common with the way our prehistoric ancestors may have spoken.',
           type: 'multiple-choice',
           choice: ["True", "False"],
@@ -559,7 +624,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       `,
       question: [
         {
-          id: 'E1_R3_Q1',
+          id: 'E2_R3_Q1',
           label: `
 
 
@@ -572,24 +637,49 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R3_Q2',
+          id: 'E2_R3_Q2',
           label: '2. Which statement about population levels is correct?',
           type: 'multiple-choice',
           choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
           required: true
         },
         {
-          id: 'E1_R3_Q3',
+          id: 'E2_R3_Q3',
           label: '3. Which factor does NOT cause the birth rate to fall?',
           type: 'multiple-choice',
           choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
           required: true
         },
         {
-          id: 'E1_R3_Q4',
+          id: 'E2_R3_Q4',
           label: "4. One of the UN's targets for 2030 is to ...",
           type: 'multiple-choice',
           choice: ["end poverty", "increase life expectancy", "make population levels stable"],
+          required: true
+        },
+      ]
+    },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E2_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E2_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E2_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E2_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E2_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E2_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E2_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E2_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E2_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E2_IMI_Q9', label: "9. This material was fun to read." }
+          ],
           required: true
         },
       ]
@@ -637,7 +727,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E1_R1_Q1',
+          id: 'E2_R1_Q1',
           label: `
 
 
@@ -650,21 +740,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R1_Q2',
+          id: 'E2_R1_Q2',
           label: '2. Which book covers a long period of human history?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
           required: true
         },
         {
-          id: 'E1_R1_Q3',
+          id: 'E2_R1_Q3',
           label: '3. Which book claims that human intuition negatively affects the way people think about the world?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
           required: true
         },
         {
-          id: 'E1_R1_Q4',
+          id: 'E2_R1_Q4',
           label: '4. Which book says that current establishments are under threat from politics?',
           type: 'multiple-choice',
           choice: ["Factfulness", "Enlightenment Now", "The Rational Optimist", "The Great Surge"],
@@ -702,7 +792,7 @@ export const stepsByGroup: Record<number, Step[]> = {
         `,
       question: [
         {
-          id: 'E1_R2_Q1',
+          id: 'E2_R2_Q1',
           label: `
 
 
@@ -715,21 +805,21 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R2_Q2',
+          id: 'E2_R2_Q2',
           label: '2. The grammar of dolphin language follows the same rules as human language.',
           type: 'multiple-choice',
           choice: ["True", "False"],
           required: true
         },
         {
-          id: 'E1_R2_Q3',
+          id: 'E2_R2_Q3',
           label: '3. Brain size is not the only factor in determining language capability.',
           type: 'multiple-choice',
           choice: ["True", "False"],
           required: true
         },
         {
-          id: 'E1_R2_Q4',
+          id: 'E2_R2_Q4',
           label: '4. The language of very young children has something in common with the way our prehistoric ancestors may have spoken.',
           type: 'multiple-choice',
           choice: ["True", "False"],
@@ -759,7 +849,7 @@ export const stepsByGroup: Record<number, Step[]> = {
       `,
       question: [
         {
-          id: 'E1_R3_Q1',
+          id: 'E2_R3_Q1',
           label: `
 
 
@@ -772,24 +862,49 @@ export const stepsByGroup: Record<number, Step[]> = {
           required: true
         },
         {
-          id: 'E1_R3_Q2',
+          id: 'E2_R3_Q2',
           label: '2. Which statement about population levels is correct?',
           type: 'multiple-choice',
           choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
           required: true
         },
         {
-          id: 'E1_R3_Q3',
+          id: 'E2_R3_Q3',
           label: '3. Which factor does NOT cause the birth rate to fall?',
           type: 'multiple-choice',
           choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
           required: true
         },
         {
-          id: 'E1_R3_Q4',
+          id: 'E2_R3_Q4',
           label: "4. One of the UN's targets for 2030 is to ...",
           type: 'multiple-choice',
           choice: ["end poverty", "increase life expectancy", "make population levels stable"],
+          required: true
+        },
+      ]
+    },
+    {
+      id: '5',
+      label: 'IMI Questions',
+      description: `
+      `,
+      question: [
+        {
+          id: 'E2_IMI_Q1',
+          label: `<strong>Answer the following questions:</strong>`,
+          type: 'likert-group',
+          likertRows: [
+            { id: 'E2_IMI_Q1', label: "1. While I was reading this material, I was thinking about how much I enjoyed it." },
+            { id: 'E2_IMI_Q2', label: "2. I did not feel at all nervous while reading." },
+            { id: 'E2_IMI_Q3', label: "3. This material did not hold my attention at all." },
+            { id: 'E2_IMI_Q4', label: "4. I think I understood this material pretty well." },
+            { id: 'E2_IMI_Q5', label: "5. I would describe this material as very interesting." },
+            { id: 'E2_IMI_Q6', label: "6. I think I understood this material very well, compared to other students." },
+            { id: 'E2_IMI_Q7', label: "7. I enjoyed reading this material very much." },
+            { id: 'E2_IMI_Q8', label: "8. I felt very tense while reading this material." },
+            { id: 'E2_IMI_Q9', label: "9. This material was fun to read." }
+          ],
           required: true
         },
       ]

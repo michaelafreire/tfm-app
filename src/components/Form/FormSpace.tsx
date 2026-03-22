@@ -3,16 +3,31 @@ import FormQuestion from "./FormQuestion"
 import Stack from '@mui/material/Stack';
 import React from "react";
 
-type Choice = string
+type Choice = string;
+
+type LikertRow = {
+  id: string;
+  label: string;
+  value?: string;
+};
 
 type Question = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number'| 'date';
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' | 'date' | 'likert-group';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDateChange?: (value: string) => void;
   choice?: Choice[];
+
+  // Likert additions
+  likertRows?: LikertRow[];
+  likertLabels?: string[];
+  likertMinLabel?: string;
+  likertMaxLabel?: string;
+  onMatrixChange?: (rowId: string, value: string) => void;
+
+  required?: boolean;
 };
 
 type Step = {
