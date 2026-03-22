@@ -7,15 +7,21 @@ import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 
 type Choice = string
 
 type Question = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' | 'date';
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDateChange?: (value: string) => void;
   choice?: Choice[];
   required?: boolean;
 };
@@ -23,6 +29,23 @@ type Question = {
 type FormQuestionProps = {
   question: Question[];
 };
+
+function renderStrongText(text: string) {
+  const parts = text.split(/(<strong>.*?<\/strong>)/g).filter(Boolean);
+
+  return parts.map((part, index) => {
+    const match = part.match(/^<strong>(.*?)<\/strong>$/);
+    if (match) {
+      return (
+        <Box component="span" key={`strong-${index}`} sx={{ color: 'primary.main', fontWeight: 'bold' }}>
+          {match[1]}
+        </Box>
+      );
+    }
+
+    return part;
+  });
+}
 
 function FormQuestion({ question }: FormQuestionProps) {
   return (
@@ -36,12 +59,15 @@ function FormQuestion({ question }: FormQuestionProps) {
             variant="body1"
             sx={{
               marginBottom: 0.5,
+              whiteSpace: "pre-line",
             }}>
-            {q.label}
+            {renderStrongText(q.label)}
+            {q.required && (
+              <Box component="span" sx={{ color: 'error.main', marginLeft: 0.5 }}>*</Box>
+            )}
           </Typography>
           {q.type === "text" &&
             <TextField
-              required={q.required}
               id="outlined-basic"
               label="Required"
               variant="outlined"
@@ -52,11 +78,12 @@ function FormQuestion({ question }: FormQuestionProps) {
           }
           {q.type === "number" && (
             <TextField
-              required={q.required}
               id='outlined-number'
-              label=""
+              label="Required"
               variant="outlined"
               type="number"
+              value={q.value || ""}
+              onChange={q.onChange}
               size="small"
               slotProps={{ input: { inputMode: 'numeric' } }}
             />
@@ -64,27 +91,45 @@ function FormQuestion({ question }: FormQuestionProps) {
           {q.type === "checkbox" &&
             <FormGroup>
               <FormControlLabel
-              required={q.required}
-              control={<Checkbox />}
-              label="" />
+              control={(
+                <Checkbox
+                  checked={q.value === "yes"}
+                  onChange={q.onChange}
+                />
+              )}
+              label="Required"
+              />
             </FormGroup>
           }
-          {q.type === "multiple-choice" && <FormControl required={q.required} component="fieldset" variant="standard">
+          {q.type === "multiple-choice" && <FormControl component="fieldset" variant="standard">
             <RadioGroup
               row
               value={q.value || ""}
               onChange={q.onChange}
               aria-labelledby="demo-row-radio-buttons-group-label"
-              name="row-radio-buttons-group"
+              name={`radio-group-${q.id}`}
             >
               {
                 q.choice?.map((c, i) => (
-                  <FormControlLabel key={`${q.id}-${i}`} value={c} control={<Radio />} label={c} />
+                  <FormControlLabel key={`${q.id}-${i}`} value={c} control={<Radio />} label={renderStrongText(c)} />
                 ))
               }
             </RadioGroup>
           </FormControl>
           }
+          {q.type === "date" && (
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={['DatePicker']}>
+                <DatePicker
+                  label={'Select month and year'}
+                  views={['month', 'year']}
+                  format="MM/YYYY"
+                  value={q.value ? dayjs(q.value, 'YYYY-MM') : null}
+                  onChange={(value) => q.onDateChange?.(value ? value.format('YYYY-MM') : '')}
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          )}
         </Box>
       ))}
     </Box>

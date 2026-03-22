@@ -8,19 +8,27 @@ import { supabase } from "../supabaseClient";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
+const normalizeGroupNumber = (value: string) =>
+  value.replace(/\s+/g, "").replace(/\D/g, "");
+
 function Intro() {
   const navigate = useNavigate();
   const location = useLocation();
   const [participantCode, setParticipantCode] = useState(
     location.state?.participantCode ?? ""
   );
+  const [groupNumber, setGroupNumber] = useState(() =>
+    normalizeGroupNumber(String(location.state?.groupNumber ?? ""))
+  );
   const normalizedCode = participantCode.trim().toUpperCase();
+  const normalizedGroupNumber = normalizeGroupNumber(groupNumber);
 
   async function savePreResponses() {
     return supabase.from("responses").insert([
       {
         participant_code: normalizedCode,
         phase: "login",
+        group_number: normalizedGroupNumber,
       }
     ]);
   }
@@ -35,7 +43,7 @@ function Intro() {
       }
       return;
     }
-    navigate("/pre", { state: { participantCode: normalizedCode } });
+    navigate("/pre", { state: { participantCode: normalizedCode, groupNumber: normalizedGroupNumber } });
   };
 
   return (
@@ -103,16 +111,35 @@ function Intro() {
           alignItems: "flex-end",
         }}>
           <TextField
-            required
             size="small"
             id="outlined-basic"
-            label="Participant Code"
+            label={(
+              <>
+                Group Number
+                <Box component="span" sx={{ color: "error.main", marginLeft: 0.5 }}>*</Box>
+              </>
+            )}
+            variant="outlined"
+            value={normalizedGroupNumber}
+            onChange={(e) => setGroupNumber(normalizeGroupNumber(e.target.value))}
+            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+            sx={{ marginRight: 2 }}
+          />
+          <TextField
+            size="small"
+            id="outlined-basic"
+            label={(
+              <>
+                Participant Code
+                <Box component="span" sx={{ color: "error.main", marginLeft: 0.5 }}>*</Box>
+              </>
+            )}
             variant="outlined"
             value={participantCode}
             onChange={(e) => setParticipantCode(e.target.value)}
             sx={{ marginRight: 2 }}
           />
-          {participantCode ? (
+          {participantCode && normalizedGroupNumber ? (
               <ColorButton
                 name="Start Experiment"
                 disabled={false}

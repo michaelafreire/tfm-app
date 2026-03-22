@@ -3,108 +3,99 @@ import experimentImage from '../assets/experiment.png';
 import ColorButton from '../components/ColorButton';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { stepsByGroup } from './experienceStepsB';
+import type { Step } from './experienceStepsB';
 
-type Choice = string
-
-type Question = {
-  id: string;
-  label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  choice?: Choice[];
-  required?: boolean;
-};
-
-type Step = {
-  id: string;
-  label: string;
-  description: string;
-  question: Question[];
-};
-
-function Post() {
+function ExperienceB() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState<number>(0);
   const participantCode = location.state?.participantCode;
   const groupNumber = location.state?.groupNumber;
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const navigate = useNavigate();
-  const [feelings, setFeelings] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const rawSteps: Step[] = groupNumber ? stepsByGroup[groupNumber] || [] : [];
+
+  const steps: Step[] = rawSteps.map(step => ({
+    ...step,
+    question: step.question.map(q => ({
+      ...q,
+      value: answers[q.id] || "",
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+        handleChange(q.id, e.target.value)
+    }))
+  }));
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [currentStep]);
 
   if (!participantCode) {
     return <div>Invalid access. Please restart the experiment.</div>;
   }
 
-  async function savePostResponses() {
+  if (!groupNumber || !stepsByGroup[groupNumber]) {
+    return <div>Invalid group configuration</div>;
+  }
+
+  const handleChange = (id: string, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [id]: value
+    }));
+  };
+
+  async function saveResponses() {
+    const answerColumns = Object.fromEntries(
+      Object.entries(answers).map(([key, value]) => [
+        key.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'),
+        value,
+      ])
+    );
+
     return supabase.from("responses").insert([
       {
         participant_code: participantCode,
         group_number: groupNumber,
-        phase: "post",
-        feelings: feelings,
-        // Add other responses here
+        phase: "experienceb",
+        ...answerColumns
       }
     ]);
   }
-
-  const steps: Step[] = [
-    {
-      id: '1',
-      label: 'Cognitive Test',
-      description: 'Please answer the following questions about your experience during the experiment.',
-      question: [
-        {
-          id: '1-1',
-          label: 'Stress levels?',
-          type: 'multiple-choice'
-        },
-        {
-          id: '1-2',
-          label: 'How do you feel?',
-          type: 'text',
-          value: feelings,
-          onChange: (e) => setFeelings(e.target.value),
-          required: true,
-        },
-      ]
-    },
-    {
-      id: '2',
-      label: 'Next Steps',
-      description: 'Thank you for participating! Please click "Next" to complete the experiment and receive further instructions.',
-      question: [
-        { id: '2-1', label: 'Should we keep in touch?', type: 'checkbox' },
-      ]
-    },
-  ];
 
   const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      const { error } = await savePostResponses();
+      const { error } = await saveResponses();
 
       if (error) {
-        console.error(error);
-        alert("There was a problem saving your answers. Please contact the researcher.");
+        if (error.code === "23505") {
+          alert("This participant code has already completed this phase.");
+        } else {
+          alert("There was a problem saving your answers. Please contact the researcher.");
+        }
         return;
       }
 
-      navigate('/final', { state: { participantCode, groupNumber } });
+      navigate('/post', { state: { participantCode, groupNumber } });
     }
   };
 
-    const isNextDisabled = () => {
+  const isNextDisabled = () => {
     const step = steps[currentStep];
     if (!step) return false;
     return step.question.some(
       q => q.required && (!q.value || q.value === '')
     );
   };
+
 
   return (
     <Box
@@ -126,7 +117,7 @@ function Post() {
       }}>
         <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
         <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
-          Post-experiment Questions
+          Reading Comprehension
         </Typography>
         <ProgressBar steps={steps} currentStep={currentStep} />
       </Box>
@@ -141,7 +132,9 @@ function Post() {
         flexDirection: "column",
         alignItems: "flex-start",
       }}>
-        <Box sx={{
+        <Box
+          ref={contentRef}
+          sx={{
           flex: 4,
           overflowY: 'auto',
           minHeight: 0,
@@ -152,14 +145,14 @@ function Post() {
             height: 8,
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(0,0,0,0.25)',
+            backgroundColor: '#d1f2ea',
             borderRadius: 4,
           },
           '&::-webkit-scrollbar-track': {
             background: 'transparent',
           },
           scrollbarWidth: 'thin', // Firefox
-          scrollbarColor: 'rgba(0,0,0,0.25) transparent', // Firefox
+          scrollbarColor: '#d1f2ea transparent', // Firefox
         }}>
           <FormSpace steps={steps} currentStep={currentStep} />
         </Box>
@@ -181,4 +174,4 @@ function Post() {
   )
 }
 
-export default Post
+export default ExperienceB

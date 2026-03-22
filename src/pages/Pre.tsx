@@ -13,9 +13,10 @@ type Choice = string
 type Question = {
   id: string;
   label: string;
-  type: 'text' | 'multiple-choice' | 'checkbox' | 'number';
+  type: 'text' | 'multiple-choice' | 'checkbox' | 'number' | 'date' ;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDateChange?: (value: string) => void;
   choice?: Choice[];
   required?: boolean;
 };
@@ -31,8 +32,11 @@ function Pre() {
   const location = useLocation();
   const navigate = useNavigate();
   const participantCode = location.state?.participantCode;
+  const groupNumber = location.state?.groupNumber;
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [initials, setInitials] = useState("");
+  const [consent, setConsent] = useState("");
+  const [demograph_1, setDemograph1] = useState("");
+  const [demograph_2, setDemograph2] = useState("");
   const [ASRS1, setASRS1] = useState("");
   const [ASRS2, setASRS2] = useState("");
   const [ASRS3, setASRS3] = useState("");
@@ -47,8 +51,11 @@ function Pre() {
     return supabase.from("responses").insert([
       {
         participant_code: participantCode,
+        group_number: groupNumber,
         phase: "pre",
-        initials: initials,
+        consent: consent,
+        demograph_1: demograph_1,
+        demograph_2: demograph_2,
         ASRS1: ASRS1,
         ASRS2: ASRS2,
         ASRS3: ASRS3,
@@ -68,15 +75,10 @@ function Pre() {
       question: [
         {
           id: '1-1',
-          label: 'Do you consent to participate in this experiment?',
-          type: 'checkbox',
-        },
-        {
-          id: '1-2',
           label: 'Please provide your initials:',
           type: 'text',
-          value: initials,
-          onChange: (e) => setInitials(e.target.value),
+          value: consent,
+          onChange: (e) => setConsent(e.target.value),
           required: true,
         },
       ]
@@ -88,8 +90,20 @@ function Pre() {
       question: [
         {
           id: '2-1',
-          label: 'What is your age?',
-          type: 'number'
+          label: 'What degree are you <strong>currently pursuing</strong>?',
+          type: 'multiple-choice',
+          value: demograph_1,
+          onChange: (e) => setDemograph1(e.target.value),
+          choice: ["Bachelor's Degree", "Master's Degree", "PhD"],
+          required: true,
+        },
+        {
+          id: '2-2',
+          label: 'When did you <strong>begin</strong> this program?',
+          type: 'date',
+          value: demograph_2,
+          onDateChange: (value) => setDemograph2(value),
+          required: true,
         },
       ]
     },
@@ -104,7 +118,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS1,
           onChange: (e) => setASRS1(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
         {
           id: '3-2',
@@ -112,7 +127,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS2,
           onChange: (e) => setASRS2(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
         {
           id: '3-3',
@@ -120,7 +136,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS3,
           onChange: (e) => setASRS3(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
         {
           id: '3-4',
@@ -128,7 +145,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS4,
           onChange: (e) => setASRS4(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
         {
           id: '3-5',
@@ -136,7 +154,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS5,
           onChange: (e) => setASRS5(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
         {
           id: '3-6',
@@ -144,7 +163,8 @@ function Pre() {
           type: 'multiple-choice',
           value: ASRS6,
           onChange: (e) => setASRS6(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"]
+          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          required: true,
         },
       ]
     },
@@ -165,7 +185,7 @@ function Pre() {
         return;
       }
 
-      navigate('/experience', { state: { participantCode } });
+      navigate('/experiencea', { state: { participantCode, groupNumber } });
     }
   };
 
