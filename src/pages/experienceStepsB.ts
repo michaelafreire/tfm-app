@@ -225,8 +225,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '5',
       label: 'IMI Questions',
-      description: `
-      `,
+      description: ``,
       question: [
         {
           id: 'E2_IMI_Q1',

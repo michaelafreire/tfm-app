@@ -93,7 +93,7 @@ function FormSpace({ steps, currentStep }: FormSpaceProps) {
           </React.Fragment>
         ) : null;
       })}
-      <Stack direction={{ xs: "row", md: "column" }} spacing={3} alignItems="left">
+      <Stack direction="column" spacing={3} alignItems="stretch" sx={{ width: '100%' }}>
         {steps.map((step, index) => {
           return index === currentStep ? (
             <FormQuestion key={step.id} question={step.question} />

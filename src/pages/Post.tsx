@@ -139,11 +139,13 @@ function Post() {
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
+        alignItems: "stretch",
       }}>
         <Box sx={{
+          width: '100%',
           flex: 4,
           overflowY: 'auto',
+          overflowX: 'hidden',
           minHeight: 0,
           position: 'relative',
           // Custom scrollbar styling for WebKit and Firefox

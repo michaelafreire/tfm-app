@@ -46,6 +46,27 @@ type FormQuestionProps = {
 
 const defaultLikert = ["1", "2", "3", "4", "5", "6", "7"];
 
+const likertOptionLabels: Record<string, string> = {
+  "1": "not true at all",
+  "4": "somewhat true",
+  "7": "very true",
+};
+
+function renderLikertOptionLabel(option: string) {
+  const description = likertOptionLabels[option];
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.1 }}>
+      <Typography variant="caption">{option}</Typography>
+      {description && (
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+          {description}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
 function renderStrongText(text: string) {
   const parts = text.split(/(<strong>.*?<\/strong>)/g).filter(Boolean);
 
@@ -171,14 +192,14 @@ function FormQuestion({ question }: FormQuestionProps) {
                 value={q.value || ""}
                 onChange={q.onChange}
                 name={`likert-${q.id}`}
-                sx={{ justifyContent: "space-between", px: 1 }}
+                sx={{ justifyContent: "flex-start", gap: 0.5, px: 0 }}
               >
                 {(q.choice && q.choice.length > 0 ? q.choice : defaultLikert).map((option) => (
                   <FormControlLabel
                     key={`${q.id}-${option}`}
                     value={option}
                     control={<Radio size="small" />}
-                    label={<Typography variant="caption">{option}</Typography>}
+                    label={renderLikertOptionLabel(option)}
                     labelPlacement="bottom"
                     sx={{ margin: 0 }}
                   />
@@ -190,17 +211,6 @@ function FormQuestion({ question }: FormQuestionProps) {
           {/* LIKERT GROUP */}
           {q.type === "likert-group" && (
             <Box sx={{ mt: 1 }}>
-
-              {/* Anchors */}
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1, px: 1 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {q.likertMinLabel || "not at all true"}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {q.likertMaxLabel || "very true"}
-                </Typography>
-              </Box>
-
               {q.likertRows?.map((row) => {
                 return (
                   <Box
@@ -221,14 +231,14 @@ function FormQuestion({ question }: FormQuestionProps) {
                       onChange={(e) =>
                         q.onMatrixChange?.(row.id, e.target.value)
                       }
-                      sx={{ justifyContent: "space-between", px: 1 }}
+                      sx={{ justifyContent: "flex-start", gap: 0.5, px: 0 }}
                     >
                       {(q.likertLabels || defaultLikert).map((option) => (
                         <FormControlLabel
                           key={option}
                           value={option}
                           control={<Radio size="small" />}
-                          label={<Typography variant="caption">{option}</Typography>}
+                          label={renderLikertOptionLabel(option)}
                           labelPlacement="bottom"
                           sx={{ margin: 0 }}
                         />
