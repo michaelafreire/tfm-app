@@ -185,7 +185,7 @@ function Pre() {
         return;
       }
 
-      navigate('/experiencea', { state: { participantCode, groupNumber } });
+      navigate('/calibration', { state: { participantCode, groupNumber } });
     }
   };
 

@@ -1,7 +1,8 @@
-import { Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import FormQuestion from "./FormQuestion"
 import Stack from '@mui/material/Stack';
 import React from "react";
+import ColorButton from "../ColorButton";
 
 type Choice = string;
 
@@ -40,6 +41,8 @@ type Step = {
 type FormSpaceProps = {
   steps: Step[];
   currentStep: number;
+  completedReadingSteps?: Record<string, boolean>;
+  onCompleteReadingStep?: (stepId: string) => void;
 };
 
 function renderDescription(description: string) {
@@ -65,10 +68,22 @@ function renderDescription(description: string) {
   });
 }
 
-function FormSpace({ steps, currentStep }: FormSpaceProps) {
+function isReadingStep(step: Step) {
+  return step.question[0]?.id ? /_R\d+_/.test(step.question[0].id) : false;
+}
+
+function FormSpace({
+  steps,
+  currentStep,
+  completedReadingSteps = {},
+  onCompleteReadingStep = () => {},
+}: FormSpaceProps) {
   return (
     <>
       {steps.map((step, index) => {
+        const readingStep = isReadingStep(step);
+        const readingCompleted = completedReadingSteps[step.id] === true;
+
         return index === currentStep ? (
           <React.Fragment key={step.id}>
             <Typography
@@ -81,22 +96,50 @@ function FormSpace({ steps, currentStep }: FormSpaceProps) {
               }}>
               {step.label.toUpperCase()}
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                marginLeft: 2,
-                whiteSpace: "pre-line",
-              }}
-            >
-              {renderDescription(step.description)}
-            </Typography>
+            {(!readingStep || !readingCompleted) && (
+              <Typography
+                variant="body1"
+                sx={{
+                  marginLeft: 2,
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {renderDescription(step.description)}
+              </Typography>
+            )}
+            {readingStep && !readingCompleted && (
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mt: 10,
+                }}
+              >
+                <ColorButton
+                  name="I have finished reading"
+                  disabled={false}
+                  onClick={() => onCompleteReadingStep(step.id)}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ marginTop: 1, textAlign: "center" }}
+                >
+                  Click to continue to the questions.
+                </Typography>
+              </Box>
+            )}
           </React.Fragment>
         ) : null;
       })}
       <Stack direction="column" spacing={3} alignItems="stretch" sx={{ width: '100%' }}>
         {steps.map((step, index) => {
-          return index === currentStep ? (
-            <FormQuestion key={step.id} question={step.question} />
+          return index === currentStep && (!isReadingStep(step) || completedReadingSteps[step.id]) ? (
+            <React.Fragment key={step.id}>
+              <FormQuestion question={step.question} />
+            </React.Fragment>
           ) : null;
         })}
       </Stack>

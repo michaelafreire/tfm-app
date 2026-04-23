@@ -71,8 +71,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R1_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The British trainee felt that the people who want to be addressed as 'Dr' must be …
@@ -132,8 +130,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R2_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The majority of climbers on Everest …
@@ -189,8 +185,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R3_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The study in the journal 'Science' was written by NASA scientists.
@@ -283,8 +277,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R1_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The British trainee felt that the people who want to be addressed as 'Dr' must be …
@@ -344,8 +336,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R2_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The majority of climbers on Everest …
@@ -401,8 +391,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R3_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. The study in the journal 'Science' was written by NASA scientists.`,
@@ -503,8 +491,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R1_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. Which book talks about how we can continue to make things even better?
@@ -568,8 +554,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R2_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. Experts fully understand how the Hindi language developed.
@@ -625,8 +609,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R3_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
@@ -728,8 +710,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R1_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. Which book talks about how we can continue to make things even better?
@@ -793,8 +773,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R2_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. Experts fully understand how the Hindi language developed.
@@ -850,8 +828,6 @@ export const stepsByGroup: Record<number, Step[]> = {
         {
           id: 'E2_R3_Q1',
           label: `
-
-
           <strong>Answer the following questions:</strong>
 
           1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
