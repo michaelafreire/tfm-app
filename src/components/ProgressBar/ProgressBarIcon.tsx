@@ -32,7 +32,17 @@ function ProgressBarIcon({ id, label, isActive, isCompleted }: ProgressBarIconPr
       }}>
         {avatarText}
       </Avatar>
-      <Typography sx={{ paddingTop: { xs: 1, md: 0 }, paddingLeft: { md: 2 } }}>{label}</Typography>
+      <Typography
+        sx={{
+          paddingTop: { xs: 1, md: 0 },
+          paddingLeft: { md: 2 },
+          fontWeight: isActive ? "bold" : 500,
+          color: isActive ? "text.primary" : "text.secondary",
+          fontSize: "0.82rem",
+        }}
+      >
+        {label}
+      </Typography>
     </Box>
   )
 }

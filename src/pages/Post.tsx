@@ -110,7 +110,7 @@ function Post() {
     <Box
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", md: "row" },
+        flexDirection:  "column",
         height: "100%",
         gap: 1,
       }}>

@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { computeAsrsProfile } from "../experiment/adaptiveConfig";
+import type { ExperimentRouteState } from "../experiment/routeState";
 
 type Choice = string
 
@@ -30,9 +32,10 @@ type Step = {
 
 function Pre() {
   const location = useLocation();
+  const routeState = (location.state as ExperimentRouteState | null) ?? {};
   const navigate = useNavigate();
-  const participantCode = location.state?.participantCode;
-  const groupNumber = location.state?.groupNumber;
+  const participantCode = routeState.participantCode;
+  const groupNumber = routeState.groupNumber;
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [consent, setConsent] = useState("");
   const [demograph_1, setDemograph1] = useState("");
@@ -185,7 +188,15 @@ function Pre() {
         return;
       }
 
-      navigate('/calibration', { state: { participantCode, groupNumber } });
+      const asrsProfile = computeAsrsProfile([ASRS1, ASRS2, ASRS3, ASRS4, ASRS5, ASRS6]);
+
+      navigate('/calibration', {
+        state: {
+          participantCode,
+          groupNumber,
+          ...asrsProfile,
+        },
+      });
     }
   };
 
@@ -202,7 +213,7 @@ function Pre() {
     <Box
       sx={{
         display: "flex",
-        flexDirection: { xs: "column", md: "row" },
+        flexDirection: "column",
         height: "100%",
         gap: 1,
       }}>

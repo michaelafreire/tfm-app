@@ -2,6 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ColorButton from "../components/ColorButton";
+import type { ExperimentRouteState } from "../experiment/routeState";
 
 const CALIBRATION_POINTS = [
   { id: "top-left", top: "12%", left: "12%" },
@@ -27,10 +28,11 @@ type CalibrationScore = {
 
 function Calibration() {
   const location = useLocation();
+  const routeState = (location.state as ExperimentRouteState | null) ?? {};
   const navigate = useNavigate();
-  const participantCode = location.state?.participantCode;
-  const groupNumber = location.state?.groupNumber;
-  const nextPath = location.state?.nextPath === "/experienceb" ? "/experienceb" : "/experiencea";
+  const participantCode = routeState.participantCode;
+  const groupNumber = routeState.groupNumber;
+  const nextPath = routeState.nextPath === "/experienceb" ? "/experienceb" : "/experiencea";
   const nextExperienceName = nextPath === "/experienceb" ? "Experience B" : "Experience A";
 
   const [activePointIndex, setActivePointIndex] = useState(0);
@@ -161,7 +163,15 @@ function Calibration() {
   };
 
   const handleContinue = () => {
-    navigate(nextPath, { state: { participantCode, groupNumber } });
+    navigate(nextPath, {
+      state: {
+        participantCode,
+        groupNumber,
+        asrsPartAScore: routeState.asrsPartAScore,
+        asrsClassification: routeState.asrsClassification,
+        ticksPerReading: routeState.ticksPerReading,
+      },
+    });
   };
 
   const wait = (ms: number) =>

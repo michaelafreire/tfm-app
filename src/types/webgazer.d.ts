@@ -4,7 +4,7 @@ type WebGazerData = {
 };
 
 interface WebGazerInstance {
-  params: any;
+  params: Record<string, unknown>;
   setTracker(tracker: string): WebGazerInstance;
   setGazeListener(
     listener: (data: WebGazerData | null, timestamp: number) => void

@@ -18,14 +18,14 @@ function ProgressBar({ steps, currentStep }: ProgressBarProps) {
     <Box
       sx={{
         display: "flex",
-        flexDirection: { xs: "row", md: "column" },
+        flexDirection:  "row",
         height: "100%",
         gap: 4,
         alignItems: "left",
         width: { xs: "auto", md: "100%" },
         paddingTop: 4,
       }}>
-      <Stack direction={{ xs: "row", md: "column" }} spacing={3} alignItems="left">
+      <Stack direction="row" spacing={3} alignItems="left">
         {steps.map((step, index) => (
           <ProgressBarIcon
             key={step.id}

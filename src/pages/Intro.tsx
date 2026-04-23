@@ -43,7 +43,12 @@ function Intro() {
       }
       return;
     }
-    navigate("/pre", { state: { participantCode: normalizedCode, groupNumber: normalizedGroupNumber } });
+    navigate("/pre", {
+      state: {
+        participantCode: normalizedCode,
+        groupNumber: Number(normalizedGroupNumber),
+      },
+    });
   };
 
   return (
