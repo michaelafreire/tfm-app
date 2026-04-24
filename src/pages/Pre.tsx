@@ -74,7 +74,57 @@ function Pre() {
     {
       id: '1',
       label: 'Consent Form',
-      description: 'Please read the consent form carefully and provide your initials to indicate your agreement to participate in this experiment.',
+      description: `Please read the consent form carefully and provide your initials to indicate your agreement to participate in this experiment:
+
+    # Consent Form
+
+## AI Reading Comprehension Study (Web-Based)
+
+Purpose
+
+This study examines how people interact with AI systems during reading comprehension tasks.
+
+What You Will Do
+
+If you participate, you will:
+
+* Complete short reading comprehension tasks with AI support
+* Have your eye movements recorded using **WebGrazer**
+* Complete a short self-report questionnaire (ASRS)
+
+Eye Tracking (WebGrazer)
+
+* A standard webcam is used during the study
+* The webcam **does not record video or images**
+* Only **screen gaze coordinates (x/y positions)** are collected
+
+Questionnaire (ASRS)
+
+* Measures **self-reported inattention**
+* Used for research only
+* **No diagnosis, labeling, or clinical classification** will be made
+
+Data Use
+
+* Responses, interaction logs, and gaze coordinates are collected
+* Data is anonymized and used for research only
+* No video or identifiable images are stored
+
+Voluntary Participation
+
+* Participation is voluntary
+* You may stop at any time without penalty
+
+Consent
+
+By continuing, you confirm that you:
+
+* Understand the study
+* Agree to participate voluntarily
+* Understand that webcam use only records gaze coordinates, not images or video
+* Understand the ASRS is not a diagnostic tool
+`,
+
       question: [
         {
           id: '1-1',

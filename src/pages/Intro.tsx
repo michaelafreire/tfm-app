@@ -78,7 +78,7 @@ function Intro() {
         }}>
           <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
           <Typography variant="h1" component="h1" sx={{ margin: 0 }}>
-            Experiment on AI Gamification effect on motivation
+            AI for Reading Comprehension
           </Typography>
         </Box>
         <Box sx={{
@@ -88,11 +88,7 @@ function Intro() {
           paddingRight: 4,
         }}>
           <Typography variant="body1">
-            Join an interactive experiment exploring gamification in education.
-            Participate in engaging learning activities designed with game
-            elements like challenges and rewards. Help researchers understand
-            how gamification impacts motivation, engagement, and learning
-            outcomes.
+            Welcome to the experiment! In this study, we are exploring the use of AI in reading comprehension. You will be asked to read passages and answer some questions about them. The experiment will take approximately 1 hour to complete. Please make sure to enter your group number and participant code before starting the experiment.
           </Typography>
         </Box>
         <Box sx={{

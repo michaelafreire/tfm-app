@@ -39,7 +39,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'Group 1/2 instructions here...',
+      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
       question: []
     },
     {
@@ -255,7 +255,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'Group 1/2 instructions here...',
+      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
       question: []
     },
     {
@@ -474,7 +474,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'Group 3/4 instructions here...',
+      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
       question: []
     },
     {
@@ -681,7 +681,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'Group 3/4 instructions here...',
+      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
       question: []
     },
     {

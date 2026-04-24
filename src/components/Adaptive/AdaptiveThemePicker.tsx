@@ -14,11 +14,11 @@ function AdaptiveThemePicker({
 }: AdaptiveThemePickerProps) {
   return (
     <Box sx={{ mt: 4 }}>
-      <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
+      <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1, ml: 2 }}>
         Before beginning, customize your companion.
       </Typography>
-      <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
-        Choose the visual vibe for this adaptive reading experience.
+      <Typography variant="body2" sx={{ mb: 2, ml: 2, color: "text.secondary" }}>
+        Your progress bar adapts to you. How would you like your journey to look?
       </Typography>
       <Box
         sx={{
@@ -61,7 +61,7 @@ function AdaptiveThemePicker({
                   mb: 1,
                 }}
               />
-              <Typography variant="body2" sx={{ fontWeight: isSelected ? "bold" : 500 }}>
+              <Typography variant="body2" sx={{ fontWeight: isSelected ? "bold" : 500, color: "text.primary" }}>
                 {theme.label}
               </Typography>
             </Box>
