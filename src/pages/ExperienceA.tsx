@@ -22,6 +22,7 @@ import type { Step } from './experienceStepsA';
 import { supabase } from "../supabaseClient";
 import { getCoachBubbleMessage } from "../services/coachBubble";
 import { getRandomProbeDelayMs } from "../experiment/probeTiming";
+import { readLocalDraft, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 import {
   startTracking,
   pauseTracking,
@@ -51,22 +52,35 @@ function ExperienceA() {
   const location = useLocation();
   const routeState = (location.state as ExperimentRouteState | null) ?? {};
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<number>(0);
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
   const condition = groupNumber ? getExperienceCondition(groupNumber, "A") : "nonAdaptive";
   const isAdaptive = condition === "adaptive";
+  const draftKey = `tfm-draft:experiencea:${participantCode ?? "unknown"}`;
+  const savedDraft = useMemo(
+    () => readLocalDraft(draftKey, {
+      currentStep: 0,
+      selectedTheme: isAdaptive ? routeState.selectedTheme : undefined,
+      answers: {} as Record<string, string>,
+      completedReadingSteps: {} as Record<string, boolean>,
+      readingProgressByStep: {} as Record<string, number>,
+      paceWarmthByStep: {} as Record<string, number>,
+      readingPacePreference: 0,
+    }),
+    [draftKey, isAdaptive, routeState.selectedTheme],
+  );
+  const [currentStep, setCurrentStep] = useState<number>(savedDraft.currentStep);
   const [selectedTheme, setSelectedTheme] = useState<AdaptiveThemeId | undefined>(
-    isAdaptive ? routeState.selectedTheme : undefined
+    savedDraft.selectedTheme
   );
   const theme = getAdaptiveTheme(selectedTheme);
   const ticksPerReading = routeState.ticksPerReading ?? 2;
   const [coachBubble, setCoachBubble] = useState<CoachBubbleState>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [completedReadingSteps, setCompletedReadingSteps] = useState<Record<string, boolean>>({});
-  const [readingProgressByStep, setReadingProgressByStep] = useState<Record<string, number>>({});
-  const [paceWarmthByStep, setPaceWarmthByStep] = useState<Record<string, number>>({});
-  const [readingPacePreference, setReadingPacePreference] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>(savedDraft.answers);
+  const [completedReadingSteps, setCompletedReadingSteps] = useState<Record<string, boolean>>(savedDraft.completedReadingSteps);
+  const [readingProgressByStep, setReadingProgressByStep] = useState<Record<string, number>>(savedDraft.readingProgressByStep);
+  const [paceWarmthByStep, setPaceWarmthByStep] = useState<Record<string, number>>(savedDraft.paceWarmthByStep);
+  const [readingPacePreference, setReadingPacePreference] = useState(savedDraft.readingPacePreference);
   const [shiningTick, setShiningTick] = useState<{ stepId: string; tickIndex: number } | null>(null);
   const [probeOpen, setProbeOpen] = useState(false);
   const [activeProbeStepId, setActiveProbeStepId] = useState<string | null>(null);
@@ -95,6 +109,27 @@ function ExperienceA() {
     () => (groupNumber ? stepsByGroup[groupNumber] || [] : []),
     [groupNumber]
   );
+  const { clearDraft } = useLocalDraft(
+    draftKey,
+    {
+      currentStep,
+      selectedTheme,
+      answers,
+      completedReadingSteps,
+      readingProgressByStep,
+      paceWarmthByStep,
+      readingPacePreference,
+    },
+    Boolean(participantCode),
+  );
+  useEffect(() => {
+    if (!participantCode || !groupNumber) return;
+    writeLocalSession({
+      participantCode,
+      groupNumber,
+      phase: "experiencea",
+    });
+  }, [groupNumber, participantCode]);
 
   const handleChange = (id: string, value: string) => {
     setAnswers(prev => ({
@@ -190,6 +225,7 @@ function ExperienceA() {
     if (contentRef.current) {
       contentRef.current.scrollTop = 0;
     }
+    window.scrollTo({ top: 0, left: 0 });
   }, [currentStep]);
 
   useEffect(() => {
@@ -602,11 +638,17 @@ function ExperienceA() {
         return;
       }
 
-      navigate('/calibration', {
+      clearDraft();
+      writeLocalSession({
+        participantCode,
+        groupNumber,
+        phase: "break",
+      });
+
+      navigate('/break', {
         state: {
           participantCode,
           groupNumber,
-          nextPath: "/experienceb",
           asrsPartAScore: routeState.asrsPartAScore,
           asrsClassification: routeState.asrsClassification,
           ticksPerReading,

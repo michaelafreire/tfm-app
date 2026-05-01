@@ -7,12 +7,33 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { readLocalSession, writeLocalSession } from "../hooks/useLocalDraft";
 
 const normalizeGroupNumber = (value: string) =>
   value.replace(/\s+/g, "").replace(/\D/g, "");
 
 const isValidGroupNumber = (value: string) => ["1", "2", "3", "4"].includes(value);
 const introControlWidth = { xs: "100%", lg: 220 };
+const phasePath = {
+  pre: "/pre",
+  calibrationa: "/calibration",
+  break: "/break",
+  calibrationb: "/calibration",
+  experiencea: "/experiencea",
+  experienceb: "/experienceb",
+  post: "/post",
+};
+const resumablePhases = ["post", "experienceb", "experiencea", "pre"] as const;
+
+function getLocalDraftResumePhase(participantCode: string) {
+  for (const phase of resumablePhases) {
+    if (window.localStorage.getItem(`tfm-draft:${phase}:${participantCode}`)) {
+      return phase;
+    }
+  }
+
+  return null;
+}
 
 function Intro() {
   const navigate = useNavigate();
@@ -55,12 +76,42 @@ function Intro() {
     const { error } = await savePreResponses();
     if (error) {
       if (error.code === "23505") {
-        alert("This participant code has been used.");
+        const localSession = readLocalSession();
+        const draftResumePhase = getLocalDraftResumePhase(normalizedCode);
+        const canResumeLocalSession =
+          localSession !== null &&
+          localSession.participantCode === normalizedCode &&
+          String(localSession.groupNumber) === normalizedGroupNumber;
+
+        const resumePhase = canResumeLocalSession ? localSession.phase : draftResumePhase;
+
+        if (resumePhase) {
+          navigate(phasePath[resumePhase], {
+            state: {
+              participantCode: normalizedCode,
+              groupNumber: Number(normalizedGroupNumber),
+              nextPath:
+                resumePhase === "calibrationb"
+                  ? "/experienceb"
+                  : resumePhase === "calibrationa"
+                    ? "/experiencea"
+                    : undefined,
+            },
+          });
+          return;
+        }
+
+        alert("This participant code has already been used, and no local progress was found on this browser.");
       } else {
         alert("There was a problem saving your answers. Please contact the researcher.");
       }
       return;
     }
+    writeLocalSession({
+      participantCode: normalizedCode,
+      groupNumber: Number(normalizedGroupNumber),
+      phase: "pre",
+    });
     navigate("/pre", {
       state: {
         participantCode: normalizedCode,

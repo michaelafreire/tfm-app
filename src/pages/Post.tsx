@@ -3,10 +3,11 @@ import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { readLocalDraft, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 
 type Choice = string
 
@@ -31,9 +32,40 @@ function Post() {
   const location = useLocation();
   const participantCode = location.state?.participantCode;
   const groupNumber = location.state?.groupNumber;
-  const [currentStep, setCurrentStep] = useState<number>(0);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const draftKey = `tfm-draft:post:${participantCode ?? "unknown"}`;
+  const savedDraft = useMemo(
+    () => readLocalDraft(draftKey, {
+      currentStep: 0,
+      feelings: "",
+    }),
+    [draftKey],
+  );
+  const [currentStep, setCurrentStep] = useState<number>(savedDraft.currentStep);
   const navigate = useNavigate();
-  const [feelings, setFeelings] = useState("");
+  const [feelings, setFeelings] = useState(savedDraft.feelings);
+  const { clearDraft } = useLocalDraft(
+    draftKey,
+    {
+      currentStep,
+      feelings,
+    },
+    Boolean(participantCode),
+  );
+  useEffect(() => {
+    if (!participantCode || !groupNumber) return;
+    writeLocalSession({
+      participantCode,
+      groupNumber,
+      phase: "post",
+    });
+  }, [groupNumber, participantCode]);
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, left: 0 });
+  }, [currentStep]);
 
   if (!participantCode) {
     return <div>Invalid access. Please restart the experiment.</div>;
@@ -94,6 +126,7 @@ function Post() {
         return;
       }
 
+      clearDraft();
       navigate('/final', { state: { participantCode, groupNumber } });
     }
   };
@@ -128,7 +161,7 @@ function Post() {
         flexDirection: "column",
         alignItems: "stretch",
       }}>
-        <Box sx={{
+        <Box ref={contentRef} sx={{
           width: '100%',
           flex: 4,
           overflowY: 'auto',

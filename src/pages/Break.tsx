@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
 import type { ExperimentRouteState } from '../experiment/routeState';
+import { writeLocalSession } from '../hooks/useLocalDraft';
 
 const BREAK_DURATION_SECONDS = 5 * 60;
 const CANVAS_WIDTH = 720;
@@ -99,15 +100,33 @@ function Break() {
   const [isBreakOver, setIsBreakOver] = useState(false);
 
   const participantCode = routeState.participantCode;
+  const groupNumber = routeState.groupNumber;
+
+  useEffect(() => {
+    if (!participantCode || !groupNumber) return;
+    writeLocalSession({
+      participantCode,
+      groupNumber,
+      phase: 'break',
+    });
+  }, [groupNumber, participantCode]);
 
   const goToExperienceB = useCallback(() => {
+    if (participantCode && groupNumber) {
+      writeLocalSession({
+        participantCode,
+        groupNumber,
+        phase: 'calibrationb',
+      });
+    }
+
     navigate('/calibration', {
       state: {
         ...routeState,
         nextPath: '/experienceb',
       },
     });
-  }, [navigate, routeState]);
+  }, [groupNumber, navigate, participantCode, routeState]);
 
   const resetBall = useCallback((direction: 1 | -1) => {
     gameStateRef.current = {
@@ -316,7 +335,7 @@ function Break() {
         }
       >
         <Typography variant="body2" sx={{ maxWidth: 900, mt: 1 }}>
-          Time for a 5-minute break. Feel free to play Pong in the screen, go to the bathroom, have some water or just
+          Time for a 5-minute break. Feel free to play PONG in the screen, go to the bathroom, have some water or just
           take some time to yourself. If you do not want a break, just click "Skip break".
         </Typography>
       </ExperimentHeader>
@@ -403,7 +422,7 @@ function Break() {
             py: 4,
           }}
         >
-          <Typography variant="h5" sx={{ lineHeight: 1.35 }}>
+          <Typography variant="body1" sx={{ lineHeight: 1.35 }}>
             Break is over. Click next to start Experience B.
           </Typography>
         </DialogContent>

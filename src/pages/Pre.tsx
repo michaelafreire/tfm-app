@@ -3,12 +3,13 @@ import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 import { computeAsrsProfile } from "../experiment/adaptiveConfig";
 import type { ExperimentRouteState } from "../experiment/routeState";
+import { readLocalDraft, readLocalSession, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 
 type Choice = string
 
@@ -36,18 +37,69 @@ function Pre() {
   const navigate = useNavigate();
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
-  const [currentStep, setCurrentStep] = useState<number>(0);
-  const [consent, setConsent] = useState("");
-  const [demograph_1, setDemograph1] = useState("");
-  const [demograph_2, setDemograph2] = useState("");
-  const [demograph_3, setDemograph3] = useState("");
-  const [demograph_4, setDemograph4] = useState("");
-  const [ASRS1, setASRS1] = useState("");
-  const [ASRS2, setASRS2] = useState("");
-  const [ASRS3, setASRS3] = useState("");
-  const [ASRS4, setASRS4] = useState("");
-  const [ASRS5, setASRS5] = useState("");
-  const [ASRS6, setASRS6] = useState("");
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const draftKey = `tfm-draft:pre:${participantCode ?? "unknown"}`;
+  const savedDraft = useMemo(
+    () => readLocalDraft(draftKey, {
+      currentStep: 0,
+      consent: "",
+      demograph_1: "",
+      demograph_2: "",
+      demograph_3: "",
+      demograph_4: "",
+      ASRS1: "",
+      ASRS2: "",
+      ASRS3: "",
+      ASRS4: "",
+      ASRS5: "",
+      ASRS6: "",
+    }),
+    [draftKey],
+  );
+  const [currentStep, setCurrentStep] = useState<number>(savedDraft.currentStep);
+  const [consent, setConsent] = useState(savedDraft.consent);
+  const [demograph_1, setDemograph1] = useState(savedDraft.demograph_1);
+  const [demograph_2, setDemograph2] = useState(savedDraft.demograph_2);
+  const [demograph_3, setDemograph3] = useState(savedDraft.demograph_3);
+  const [demograph_4, setDemograph4] = useState(savedDraft.demograph_4);
+  const [ASRS1, setASRS1] = useState(savedDraft.ASRS1);
+  const [ASRS2, setASRS2] = useState(savedDraft.ASRS2);
+  const [ASRS3, setASRS3] = useState(savedDraft.ASRS3);
+  const [ASRS4, setASRS4] = useState(savedDraft.ASRS4);
+  const [ASRS5, setASRS5] = useState(savedDraft.ASRS5);
+  const [ASRS6, setASRS6] = useState(savedDraft.ASRS6);
+  const { clearDraft } = useLocalDraft(
+    draftKey,
+    {
+      currentStep,
+      consent,
+      demograph_1,
+      demograph_2,
+      demograph_3,
+      demograph_4,
+      ASRS1,
+      ASRS2,
+      ASRS3,
+      ASRS4,
+      ASRS5,
+      ASRS6,
+    },
+    Boolean(participantCode),
+  );
+  useEffect(() => {
+    if (!participantCode || !groupNumber) return;
+    writeLocalSession({
+      participantCode,
+      groupNumber,
+      phase: "pre",
+    });
+  }, [groupNumber, participantCode]);
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, left: 0 });
+  }, [currentStep]);
   if (!participantCode) {
     return <div>Invalid access. Please restart the experiment.</div>;
   }
@@ -247,10 +299,38 @@ By continuing, you confirm that you:
     if (currentStep < steps.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
+      const asrsProfile = computeAsrsProfile([ASRS1, ASRS2, ASRS3, ASRS4, ASRS5, ASRS6]);
+      const goToCalibrationA = () => {
+        clearDraft();
+        writeLocalSession({
+          participantCode,
+          groupNumber: Number(groupNumber),
+          phase: "calibrationa",
+        });
+
+        navigate('/calibration', {
+          state: {
+            participantCode,
+            groupNumber,
+            nextPath: "/experiencea",
+            ...asrsProfile,
+          },
+        });
+      };
+
       const { error } = await savePreResponses();
 
       if (error) {
         if (error.code === "23505") {
+          const localSession = readLocalSession();
+          if (
+            localSession?.participantCode === participantCode &&
+            localSession.groupNumber === Number(groupNumber)
+          ) {
+            goToCalibrationA();
+            return;
+          }
+
           alert("This participant code has already completed this phase.");
         } else {
           alert("There was a problem saving your answers. Please contact the researcher.");
@@ -258,15 +338,7 @@ By continuing, you confirm that you:
         return;
       }
 
-      const asrsProfile = computeAsrsProfile([ASRS1, ASRS2, ASRS3, ASRS4, ASRS5, ASRS6]);
-
-      navigate('/break', {
-        state: {
-          participantCode,
-          groupNumber,
-          ...asrsProfile,
-        },
-      });
+      goToCalibrationA();
     }
   };
 
@@ -301,7 +373,7 @@ By continuing, you confirm that you:
         flexDirection: "column",
         alignItems: "stretch",
       }}>
-        <Box sx={{
+        <Box ref={contentRef} sx={{
           flex: 4,
           overflowY: 'auto',
           overflowX: 'hidden',

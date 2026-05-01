@@ -47,8 +47,8 @@ type FormQuestionProps = {
 const defaultLikert = ["1", "2", "3", "4", "5", "6", "7"];
 
 const likertOptionLabels: Record<string, string> = {
-  "1": "not true at all",
-  "4": "somewhat true",
+  "1": "not true\nat all",
+  "4": "somewhat\ntrue",
   "7": "very true",
 };
 
@@ -59,13 +59,37 @@ function renderLikertOptionLabel(option: string) {
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.1 }}>
       <Typography variant="caption">{option}</Typography>
       {description && (
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.65rem" }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ fontSize: "0.65rem", minHeight: "1.45rem", whiteSpace: "pre-line", textAlign: "center" }}
+        >
           {description}
         </Typography>
       )}
     </Box>
   );
 }
+
+const likertScaleSx = {
+  display: "grid",
+  gridTemplateColumns: "repeat(7, minmax(44px, 1fr))",
+  columnGap: 1,
+  alignItems: "start",
+  width: "100%",
+  maxWidth: 720,
+  px: 0,
+};
+
+const likertOptionSx = {
+  m: 0,
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  "& .MuiFormControlLabel-label": {
+    width: "100%",
+  },
+};
 
 function renderStrongText(text: string) {
   const parts = text.split(/(<strong>.*?<\/strong>)/g).filter(Boolean);
@@ -188,11 +212,10 @@ function FormQuestion({ question }: FormQuestionProps) {
                 </Typography>
               </Box>
               <RadioGroup
-                row
                 value={q.value || ""}
                 onChange={q.onChange}
                 name={`likert-${q.id}`}
-                sx={{ justifyContent: "flex-start", gap: 0.5, px: 0 }}
+                sx={likertScaleSx}
               >
                 {(q.choice && q.choice.length > 0 ? q.choice : defaultLikert).map((option) => (
                   <FormControlLabel
@@ -201,7 +224,7 @@ function FormQuestion({ question }: FormQuestionProps) {
                     control={<Radio size="small" />}
                     label={renderLikertOptionLabel(option)}
                     labelPlacement="bottom"
-                    sx={{ margin: 0 }}
+                    sx={likertOptionSx}
                   />
                 ))}
               </RadioGroup>
@@ -226,12 +249,11 @@ function FormQuestion({ question }: FormQuestionProps) {
                     </Typography>
 
                     <RadioGroup
-                      row
                       value={row.value || ""}
                       onChange={(e) =>
                         q.onMatrixChange?.(row.id, e.target.value)
                       }
-                      sx={{ justifyContent: "flex-start", gap: 0.5, px: 0 }}
+                      sx={likertScaleSx}
                     >
                       {(q.likertLabels || defaultLikert).map((option) => (
                         <FormControlLabel
@@ -240,7 +262,7 @@ function FormQuestion({ question }: FormQuestionProps) {
                           control={<Radio size="small" />}
                           label={renderLikertOptionLabel(option)}
                           labelPlacement="bottom"
-                          sx={{ margin: 0 }}
+                          sx={likertOptionSx}
                         />
                       ))}
                     </RadioGroup>
