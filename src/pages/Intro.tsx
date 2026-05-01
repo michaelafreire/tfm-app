@@ -11,6 +11,9 @@ import { useNavigate } from "react-router-dom";
 const normalizeGroupNumber = (value: string) =>
   value.replace(/\s+/g, "").replace(/\D/g, "");
 
+const isValidGroupNumber = (value: string) => ["1", "2", "3", "4"].includes(value);
+const introControlWidth = { xs: "100%", lg: 220 };
+
 function Intro() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +25,9 @@ function Intro() {
   );
   const normalizedCode = participantCode.trim().toUpperCase();
   const normalizedGroupNumber = normalizeGroupNumber(groupNumber);
+  const hasGroupNumber = normalizedGroupNumber.length > 0;
+  const groupNumberIsValid = isValidGroupNumber(normalizedGroupNumber);
+  const canStartExperiment = normalizedCode.length > 0 && groupNumberIsValid;
 
   async function savePreResponses() {
     return supabase.from("responses").insert([
@@ -33,7 +39,19 @@ function Intro() {
     ]);
   }
 
+  const handleGroupNumberChange = (value: string) => {
+    const nextGroupNumber = normalizeGroupNumber(value);
+    if (nextGroupNumber === "" || isValidGroupNumber(nextGroupNumber)) {
+      setGroupNumber(nextGroupNumber);
+    }
+  };
+
   const handleNext = async () => {
+    if (!groupNumberIsValid) {
+      alert("Please enter a group number between 1 and 4.");
+      return;
+    }
+
     const { error } = await savePreResponses();
     if (error) {
       if (error.code === "23505") {
@@ -109,7 +127,10 @@ function Intro() {
           width: "100%",
           display: "flex",
           justifyContent: "flex-end",
-          alignItems: "flex-end",
+          alignItems: "flex-start",
+          flexDirection: { xs: "column", lg: "row" },
+          gap: 2,
+          marginTop: { xs: 2, md: 4 },
         }}>
           <TextField
             size="small"
@@ -122,9 +143,20 @@ function Intro() {
             )}
             variant="outlined"
             value={normalizedGroupNumber}
-            onChange={(e) => setGroupNumber(normalizeGroupNumber(e.target.value))}
-            inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
-            sx={{ marginRight: 2 }}
+            onChange={(e) => handleGroupNumberChange(e.target.value)}
+            error={hasGroupNumber && !groupNumberIsValid}
+            helperText={hasGroupNumber && !groupNumberIsValid ? "Enter a number from 1 to 4." : ""}
+            inputProps={{ inputMode: "numeric", pattern: "[1-4]", maxLength: 1 }}
+            sx={{
+              width: introControlWidth,
+              "& .MuiFormHelperText-root": {
+                position: { lg: "absolute" },
+                top: { lg: "100%" },
+                left: 0,
+                marginTop: 0.5,
+                marginLeft: 0,
+              },
+            }}
           />
           <TextField
             size="small"
@@ -138,20 +170,24 @@ function Intro() {
             variant="outlined"
             value={participantCode}
             onChange={(e) => setParticipantCode(e.target.value)}
-            sx={{ marginRight: 2 }}
+            sx={{ width: introControlWidth }}
           />
-          {participantCode && normalizedGroupNumber ? (
+          <Box sx={{ flexShrink: 0, width: introControlWidth }}>
+            {canStartExperiment ? (
               <ColorButton
                 name="Start Experiment"
                 disabled={false}
                 onClick={handleNext}
+                fullWidth
               />
-          ) : (
-            <ColorButton
-              name="Start Experiment"
-              disabled
-            />
-          )}
+            ) : (
+              <ColorButton
+                name="Start Experiment"
+                disabled
+                fullWidth
+              />
+            )}
+          </Box>
         </Box>
       </Box>
       <Box sx={{

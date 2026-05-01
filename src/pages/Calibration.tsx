@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ColorButton from "../components/ColorButton";
@@ -42,6 +42,7 @@ function Calibration() {
   const [errorMessage, setErrorMessage] = useState("");
   const [accuracy, setAccuracy] = useState<CalibrationScore | null>(null);
   const [showValidationPoint, setShowValidationPoint] = useState(false);
+  const [showValidationPrompt, setShowValidationPrompt] = useState(false);
   const calibrationAreaRef = useRef<HTMLDivElement | null>(null);
 
   const isComplete = activePointIndex >= CALIBRATION_POINTS.length;
@@ -137,7 +138,7 @@ function Calibration() {
       setActivePointIndex(nextPointIndex);
 
       if (nextPointIndex >= CALIBRATION_POINTS.length) {
-        void runCalibrationScore();
+        setShowValidationPrompt(true);
       }
     }
 
@@ -152,6 +153,7 @@ function Calibration() {
     setIsScoring(false);
     setAccuracy(null);
     setShowValidationPoint(false);
+    setShowValidationPrompt(false);
 
     try {
       await Promise.resolve(window.webgazer?.clearData());
@@ -172,6 +174,11 @@ function Calibration() {
         ticksPerReading: routeState.ticksPerReading,
       },
     });
+  };
+
+  const handleStartValidation = () => {
+    setShowValidationPrompt(false);
+    void runCalibrationScore();
   };
 
   const wait = (ms: number) =>
@@ -310,7 +317,7 @@ function Calibration() {
               />
               <ColorButton
                 name="Continue"
-                disabled={!isComplete || isPreparing || isScoring}
+                disabled={!isComplete || isPreparing || isScoring || showValidationPrompt}
                 onClick={handleContinue}
               />
             </Box>
@@ -364,32 +371,58 @@ function Calibration() {
           {CALIBRATION_POINTS.map((point, index) => {
             const isActive = index === activePointIndex && !isComplete;
             const isDone = index < completedPoints || isComplete;
+            const activePointProgress = `${clicksOnActivePoint}/${CLICKS_PER_POINT}`;
 
             return (
-              <Box
-                key={point.id}
-                component="button"
-                type="button"
-                onClick={handleCalibrationClick}
-                disabled={!isActive || isPreparing}
-                sx={{
-                  position: "absolute",
-                  top: point.top,
-                  left: point.left,
-                  transform: "translate(-50%, -50%)",
-                  width: isActive ? 30 : 24,
-                  height: isActive ? 30 : 24,
-                  borderRadius: "50%",
-                  border: "none",
-                  cursor: isActive && !isPreparing ? "pointer" : "default",
-                  backgroundColor: isDone ? "primary.main" : isActive ? "rgba(59,161,149,0.8)" : "rgba(59,161,149,0.18)",
-                  boxShadow: isActive
-                    ? "0 0 0 10px rgba(59,161,149,0.16)"
-                    : "0 0 0 0 rgba(59,161,149,0)",
-                  transition: "all 0.2s ease",
-                  opacity: isDone || isActive ? 1 : 0.7,
-                }}
-              />
+              <Box key={point.id}>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={handleCalibrationClick}
+                  disabled={!isActive || isPreparing}
+                  sx={{
+                    position: "absolute",
+                    top: point.top,
+                    left: point.left,
+                    transform: "translate(-50%, -50%)",
+                    width: isActive ? 30 : 24,
+                    height: isActive ? 30 : 24,
+                    borderRadius: "50%",
+                    border: "none",
+                    cursor: isActive && !isPreparing ? "pointer" : "default",
+                    backgroundColor: isDone ? "primary.main" : isActive ? "rgba(59,161,149,0.8)" : "rgba(59,161,149,0.18)",
+                    boxShadow: isActive
+                      ? "0 0 0 10px rgba(59,161,149,0.16)"
+                      : "0 0 0 0 rgba(59,161,149,0)",
+                    transition: "all 0.2s ease",
+                    opacity: isDone || isActive ? 1 : 0.7,
+                  }}
+                />
+                {isActive && !isPreparing ? (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      position: "absolute",
+                      top: point.top,
+                      left: point.left,
+                      transform: "translate(22px, -50%)",
+                      minWidth: 44,
+                      px: 1,
+                      py: 0.35,
+                      borderRadius: 999,
+                      bgcolor: "#7b3ff2",
+                      color: "#fff",
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                      textAlign: "center",
+                      boxShadow: "0 6px 18px rgba(123,63,242,0.26)",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    {activePointProgress}
+                  </Typography>
+                ) : null}
+              </Box>
             );
           })}
 
@@ -429,6 +462,49 @@ function Calibration() {
           ) : null}
         </Box>
       </Box>
+
+      <Dialog
+        open={showValidationPrompt}
+        disableEscapeKeyDown
+        aria-labelledby="validation-prompt-title"
+        PaperProps={{
+          sx: {
+            width: "min(90vw, 420px)",
+            borderRadius: 3,
+            bgcolor: "#7b3ff2",
+            color: "#fff",
+            textAlign: "center",
+            boxShadow: "0 20px 60px rgba(123,63,242,0.35)",
+          },
+        }}
+      >
+        <DialogContent sx={{ px: { xs: 3, sm: 4 }, pt: 4, pb: 1.5 }}>
+          <Typography id="validation-prompt-title" variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            A dot will appear in the middle
+          </Typography>
+          <Typography variant="body1">
+            Keep your eyes on the purple dot until the measurement finishes.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", px: 4, pb: 4 }}>
+          <Button
+            variant="contained"
+            onClick={handleStartValidation}
+            sx={{
+              minWidth: 96,
+              borderRadius: 2,
+              bgcolor: "#fff",
+              color: "#7b3ff2",
+              fontWeight: 700,
+              "&:hover": {
+                bgcolor: "rgba(255,255,255,0.9)",
+              },
+            }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

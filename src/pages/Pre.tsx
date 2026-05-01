@@ -1,6 +1,6 @@
-import { Box, Typography } from '@mui/material';
-import experimentImage from '../assets/experiment.png';
+import { Box } from '@mui/material';
 import ColorButton from '../components/ColorButton';
+import ExperimentHeader from '../components/ExperimentHeader';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
 import { useState } from 'react';
@@ -40,6 +40,8 @@ function Pre() {
   const [consent, setConsent] = useState("");
   const [demograph_1, setDemograph1] = useState("");
   const [demograph_2, setDemograph2] = useState("");
+  const [demograph_3, setDemograph3] = useState("");
+  const [demograph_4, setDemograph4] = useState("");
   const [ASRS1, setASRS1] = useState("");
   const [ASRS2, setASRS2] = useState("");
   const [ASRS3, setASRS3] = useState("");
@@ -59,6 +61,8 @@ function Pre() {
         consent: consent,
         demograph_1: demograph_1,
         demograph_2: demograph_2,
+        demograph_3: demograph_3,
+        demograph_4: demograph_4,
         ASRS1: ASRS1,
         ASRS2: ASRS2,
         ASRS3: ASRS3,
@@ -158,6 +162,22 @@ By continuing, you confirm that you:
           onDateChange: (value) => setDemograph2(value),
           required: true,
         },
+        {
+          id: '2-3',
+          label: 'What is your <strong>nationality</strong>?',
+          type: 'text',
+          value: demograph_3,
+          onChange: (e) => setDemograph3(e.target.value),
+          required: true,
+        },
+        {
+          id: '2-4',
+          label: 'In which country is your <strong>current residence</strong>?',
+          type: 'text',
+          value: demograph_4,
+          onChange: (e) => setDemograph4(e.target.value),
+          required: true,
+        }
       ]
     },
     {
@@ -240,7 +260,7 @@ By continuing, you confirm that you:
 
       const asrsProfile = computeAsrsProfile([ASRS1, ASRS2, ASRS3, ASRS4, ASRS5, ASRS6]);
 
-      navigate('/calibration', {
+      navigate('/break', {
         state: {
           participantCode,
           groupNumber,
@@ -267,22 +287,9 @@ By continuing, you confirm that you:
         height: "100%",
         gap: 1,
       }}>
-      <Box sx={{
-        bgcolor: "secondary.main",
-        borderRadius: 3,
-        p: 3,
-        flex: 1,
-        height: { xs: "auto", md: "100%" },
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-      }}>
-        <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
-        <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
-          Pre-experiment Questions
-        </Typography>
+      <ExperimentHeader title="Pre-experiment Questions">
         <ProgressBar steps={steps} currentStep={currentStep} />
-      </Box>
+      </ExperimentHeader>
       <Box sx={{
         bgcolor: "secondary.paper",
         borderRadius: 3,

@@ -1,6 +1,6 @@
-import { Box, Typography } from '@mui/material';
-import experimentImage from '../assets/experiment.png';
+import { Box } from '@mui/material';
 import ColorButton from '../components/ColorButton';
+import ExperimentHeader from '../components/ExperimentHeader';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
 import { useState } from 'react';
@@ -114,22 +114,9 @@ function Post() {
         height: "100%",
         gap: 1,
       }}>
-      <Box sx={{
-        bgcolor: "secondary.main",
-        borderRadius: 3,
-        p: 3,
-        flex: 1,
-        height: { xs: "auto", md: "100%" },
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-      }}>
-        <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
-        <Typography variant="body1" sx={{ marginTop: 2, fontWeight: 'bold' }}>
-          Post-experiment Questions
-        </Typography>
+      <ExperimentHeader title="Post-experiment Questions">
         <ProgressBar steps={steps} currentStep={currentStep} />
-      </Box>
+      </ExperimentHeader>
       <Box sx={{
         bgcolor: "secondary.paper",
         borderRadius: 3,

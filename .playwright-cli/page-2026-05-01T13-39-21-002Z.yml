@@ -1,0 +1,21 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - img "App Logo" [ref=e7]
+    - heading "AI for Reading Comprehension" [level=1] [ref=e8]
+  - paragraph [ref=e10]: Welcome to the experiment! In this study, we are exploring the use of AI in reading comprehension. You will be asked to read passages and answer some questions about them. The experiment will take approximately 1 hour to complete. Please make sure to enter your group number and participant code before starting the experiment.
+  - generic [ref=e12]: Michaela Freire Griffith | TIDE Research Group on Interactive and Distributed Technologies for Education
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic: Group Number*
+      - generic [ref=e15]:
+        - textbox "Group Number* Participant Code*" [ref=e16]
+        - group:
+          - generic: Group Number*
+    - generic [ref=e17]:
+      - generic: Participant Code*
+      - generic [ref=e18]:
+        - textbox [ref=e19]
+        - group:
+          - generic: Participant Code*
+    - generic [ref=e20]:
+      - button "Start Experiment" [disabled]

@@ -7,6 +7,7 @@ import ExperienceA from "./pages/ExperienceA";
 import ExperienceB from "./pages/ExperienceB";
 import Post from "./pages/Post";
 import Final from "./pages/Final";
+import Break from "./pages/Break";
 import { Box } from '@mui/material';
 import { useLocation } from "react-router-dom";
 import { useWebGazer } from "./hooks/useWebGazer";
@@ -33,6 +34,7 @@ function App() {
         <Route path="/experienceb" element={<ExperienceB />} />
         <Route path="/post" element={<Post />} />
         <Route path="/final" element={<Final />} />
+        <Route path="/break" element={<Break />} />
       </Routes>
     </Box>
   )

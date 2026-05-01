@@ -4,6 +4,7 @@ export default function ColorButton(props: {
   name: string;
   disabled: boolean;
   onClick?: () => void;
+  fullWidth?: boolean;
 }) {
   return (
     <Button
@@ -11,6 +12,7 @@ export default function ColorButton(props: {
       color="primary"
       disabled={props.disabled}
       onClick={props.onClick}
+      fullWidth={props.fullWidth}
       sx={{
         '&.Mui-disabled': {
           bgcolor: 'grey.400',
