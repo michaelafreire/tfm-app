@@ -12,8 +12,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 
-type Choice = string;
+type Choice = string | { value: string; label: string };
 
 type LikertRow = {
   id: string;
@@ -46,14 +47,15 @@ type FormQuestionProps = {
 
 const defaultLikert = ["1", "2", "3", "4", "5", "6", "7"];
 
-const likertOptionLabels: Record<string, string> = {
-  "1": "not true\nat all",
-  "4": "somewhat\ntrue",
-  "7": "very true",
+const likertOptionLabelKeys: Record<string, string> = {
+  "1": "form.notTrueAtAll",
+  "4": "form.somewhatTrue",
+  "7": "form.veryTrue",
 };
 
-function renderLikertOptionLabel(option: string) {
-  const description = likertOptionLabels[option];
+function renderLikertOptionLabel(option: string, t: (key: string) => string) {
+  const descriptionKey = likertOptionLabelKeys[option];
+  const description = descriptionKey ? t(descriptionKey) : undefined;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1.1 }}>
@@ -69,6 +71,14 @@ function renderLikertOptionLabel(option: string) {
       )}
     </Box>
   );
+}
+
+function getChoiceValue(choice: Choice) {
+  return typeof choice === "string" ? choice : choice.value;
+}
+
+function getChoiceLabel(choice: Choice) {
+  return typeof choice === "string" ? choice : choice.label;
 }
 
 const likertScaleSx = {
@@ -108,6 +118,8 @@ function renderStrongText(text: string) {
 }
 
 function FormQuestion({ question }: FormQuestionProps) {
+  const { t } = useTranslation();
+
   return (
     <Box>
       {question.map((q) => (
@@ -126,7 +138,7 @@ function FormQuestion({ question }: FormQuestionProps) {
           {/* TEXT */}
           {q.type === "text" && (
             <TextField
-              label="Required"
+              label={t("form.required")}
               variant="outlined"
               value={q.value}
               onChange={q.onChange}
@@ -137,7 +149,7 @@ function FormQuestion({ question }: FormQuestionProps) {
           {/* NUMBER */}
           {q.type === "number" && (
             <TextField
-              label="Required"
+              label={t("form.required")}
               variant="outlined"
               type="number"
               value={q.value || ""}
@@ -157,7 +169,7 @@ function FormQuestion({ question }: FormQuestionProps) {
                     onChange={q.onChange}
                   />
                 }
-                label="Required"
+                label={t("form.required")}
               />
             </FormGroup>
           )}
@@ -174,9 +186,9 @@ function FormQuestion({ question }: FormQuestionProps) {
                 {q.choice?.map((c, i) => (
                   <FormControlLabel
                     key={`${q.id}-${i}`}
-                    value={c}
+                    value={getChoiceValue(c)}
                     control={<Radio />}
-                    label={renderStrongText(c)}
+                    label={renderStrongText(getChoiceLabel(c))}
                   />
                 ))}
               </RadioGroup>
@@ -188,7 +200,7 @@ function FormQuestion({ question }: FormQuestionProps) {
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={['DatePicker']}>
                 <DatePicker
-                  label={'Select month and year'}
+                  label={t("form.selectMonthYear")}
                   views={['month', 'year']}
                   format="MM/YYYY"
                   value={q.value ? dayjs(q.value, 'YYYY-MM') : null}
@@ -205,10 +217,10 @@ function FormQuestion({ question }: FormQuestionProps) {
             <FormControl component="fieldset">
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
                 <Typography variant="caption" color="text.secondary">
-                  Strongly disagree
+                  {t("form.stronglyDisagree")}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Strongly agree
+                  {t("form.stronglyAgree")}
                 </Typography>
               </Box>
               <RadioGroup
@@ -217,16 +229,19 @@ function FormQuestion({ question }: FormQuestionProps) {
                 name={`likert-${q.id}`}
                 sx={likertScaleSx}
               >
-                {(q.choice && q.choice.length > 0 ? q.choice : defaultLikert).map((option) => (
+                {(q.choice && q.choice.length > 0 ? q.choice : defaultLikert).map((option) => {
+                  const optionValue = getChoiceValue(option);
+                  return (
                   <FormControlLabel
-                    key={`${q.id}-${option}`}
-                    value={option}
+                    key={`${q.id}-${optionValue}`}
+                    value={optionValue}
                     control={<Radio size="small" />}
-                    label={renderLikertOptionLabel(option)}
+                    label={renderLikertOptionLabel(optionValue, t)}
                     labelPlacement="bottom"
                     sx={likertOptionSx}
                   />
-                ))}
+                  );
+                })}
               </RadioGroup>
             </FormControl>
           )}
@@ -260,7 +275,7 @@ function FormQuestion({ question }: FormQuestionProps) {
                           key={option}
                           value={option}
                           control={<Radio size="small" />}
-                          label={renderLikertOptionLabel(option)}
+                          label={renderLikertOptionLabel(option, t)}
                           labelPlacement="bottom"
                           sx={likertOptionSx}
                         />

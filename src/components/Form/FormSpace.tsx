@@ -3,8 +3,9 @@ import FormQuestion from "./FormQuestion"
 import Stack from '@mui/material/Stack';
 import React from "react";
 import ColorButton from "../ColorButton";
+import { useTranslation } from "react-i18next";
 
-type Choice = string;
+type Choice = string | { value: string; label: string };
 
 type LikertRow = {
   id: string;
@@ -45,27 +46,78 @@ type FormSpaceProps = {
   onCompleteReadingStep?: (stepId: string) => void;
 };
 
+function renderInlineStrong(text: string) {
+  const parts = text.split(/(<strong>.*?<\/strong>|\*\*.*?\*\*)/g).filter(Boolean);
+
+  return parts.map((part, partIndex) => {
+    const htmlStrong = part.match(/^<strong>(.*?)<\/strong>$/);
+    const markdownStrong = part.match(/^\*\*(.*?)\*\*$/);
+    const strongText = htmlStrong?.[1] ?? markdownStrong?.[1];
+
+    if (strongText) {
+      return <strong key={`strong-${partIndex}`}>{strongText}</strong>;
+    }
+
+    return <React.Fragment key={`text-${partIndex}`}>{part}</React.Fragment>;
+  });
+}
+
 function renderDescription(description: string) {
   const lines = description.split("\n");
+  const nodes: React.ReactNode[] = [];
 
-  return lines.map((line, lineIndex) => {
-    const parts = line.split(/(<strong>.*?<\/strong>)/g).filter(Boolean);
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
 
-    return (
-      <React.Fragment key={`line-${lineIndex}`}>
-        {parts.map((part, partIndex) => {
-          const match = part.match(/^<strong>(.*?)<\/strong>$/);
+    if (!line) {
+      nodes.push(<Box key={`space-${index}`} sx={{ height: 10 }} />);
+      continue;
+    }
 
-          if (match) {
-            return <strong key={`part-${lineIndex}-${partIndex}`}>{match[1]}</strong>;
-          }
+    const heading = line.match(/^#{1,3}\s+(.+)$/);
+    if (heading) {
+      nodes.push(
+        <Typography key={`heading-${index}`} variant="body1" sx={{ fontWeight: 700, mt: 1.5, mb: 0.5 }}>
+          {renderInlineStrong(heading[1])}
+        </Typography>
+      );
+      continue;
+    }
 
-          return <React.Fragment key={`part-${lineIndex}-${partIndex}`}>{part}</React.Fragment>;
-        })}
-        {lineIndex < lines.length - 1 && <br />}
-      </React.Fragment>
+    if (line.startsWith("* ")) {
+      const items: string[] = [];
+      let bulletIndex = index;
+
+      while (bulletIndex < lines.length && lines[bulletIndex].trim().startsWith("* ")) {
+        items.push(lines[bulletIndex].trim().slice(2));
+        bulletIndex += 1;
+      }
+
+      nodes.push(
+        <Box
+          component="ul"
+          key={`bullets-${index}`}
+          sx={{ mt: 0.5, mb: 1.5, pl: 4, "& li": { mb: 0.35 } }}
+        >
+          {items.map((item, itemIndex) => (
+            <Box component="li" key={`bullet-${index}-${itemIndex}`}>
+              {renderInlineStrong(item)}
+            </Box>
+          ))}
+        </Box>
+      );
+      index = bulletIndex - 1;
+      continue;
+    }
+
+    nodes.push(
+      <Typography key={`paragraph-${index}`} variant="body1" sx={{ mb: 1.5, lineHeight: 1.45 }}>
+        {renderInlineStrong(line)}
+      </Typography>
     );
-  });
+  }
+
+  return nodes;
 }
 
 function isReadingStep(step: Step) {
@@ -78,6 +130,8 @@ function FormSpace({
   completedReadingSteps = {},
   onCompleteReadingStep = () => {},
 }: FormSpaceProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       {steps.map((step, index) => {
@@ -97,15 +151,13 @@ function FormSpace({
               {step.label.toUpperCase()}
             </Typography>
             {(!readingStep || !readingCompleted) && (
-              <Typography
-                variant="body1"
+              <Box
                 sx={{
                   marginLeft: 2,
-                  whiteSpace: "pre-line",
                 }}
               >
                 {renderDescription(step.description)}
-              </Typography>
+              </Box>
             )}
             {readingStep && !readingCompleted && (
               <Box
@@ -119,7 +171,7 @@ function FormSpace({
                 }}
               >
                 <ColorButton
-                  name="I have finished reading"
+                  name={t("form.finishedReading")}
                   disabled={false}
                   onClick={() => onCompleteReadingStep(step.id)}
                 />
@@ -127,7 +179,7 @@ function FormSpace({
                   variant="body2"
                   sx={{ marginTop: 1, textAlign: "center" }}
                 >
-                  Click to continue to the questions.
+                  {t("form.clickToQuestions")}
                 </Typography>
               </Box>
             )}

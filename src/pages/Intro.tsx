@@ -1,13 +1,16 @@
-import { Box, Typography } from '@mui/material';
+import { Box, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import ColorButton from '../components/ColorButton';
 import introImage from '../assets/intro.png';
 import experimentImage from '../assets/experiment.png';
 import TextField from '@mui/material/TextField';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { readLocalSession, writeLocalSession } from "../hooks/useLocalDraft";
+import { useTranslation } from "react-i18next";
+import { languageOptions, type ExperimentLanguage } from "../i18n";
+import type { ExperimentRouteState } from "../experiment/routeState";
 
 const normalizeGroupNumber = (value: string) =>
   value.replace(/\s+/g, "").replace(/\D/g, "");
@@ -38,17 +41,27 @@ function getLocalDraftResumePhase(participantCode: string) {
 function Intro() {
   const navigate = useNavigate();
   const location = useLocation();
+  const routeState = location.state as ExperimentRouteState | null;
+  const localSession = readLocalSession();
+  const { t, i18n } = useTranslation();
   const [participantCode, setParticipantCode] = useState(
-    location.state?.participantCode ?? ""
+    routeState?.participantCode ?? ""
   );
   const [groupNumber, setGroupNumber] = useState(() =>
-    normalizeGroupNumber(String(location.state?.groupNumber ?? ""))
+    normalizeGroupNumber(String(routeState?.groupNumber ?? ""))
+  );
+  const [language, setLanguage] = useState<ExperimentLanguage>(
+    routeState?.language ?? localSession?.language ?? "en"
   );
   const normalizedCode = participantCode.trim().toUpperCase();
   const normalizedGroupNumber = normalizeGroupNumber(groupNumber);
   const hasGroupNumber = normalizedGroupNumber.length > 0;
   const groupNumberIsValid = isValidGroupNumber(normalizedGroupNumber);
-  const canStartExperiment = normalizedCode.length > 0 && groupNumberIsValid;
+  const canStartExperiment = normalizedCode.length > 0 && groupNumberIsValid && Boolean(language);
+
+  useEffect(() => {
+    void i18n.changeLanguage(language);
+  }, [i18n, language]);
 
   async function savePreResponses() {
     return supabase.from("responses").insert([
@@ -69,7 +82,7 @@ function Intro() {
 
   const handleNext = async () => {
     if (!groupNumberIsValid) {
-      alert("Please enter a group number between 1 and 4.");
+      alert(t("intro.groupNumberAlert"));
       return;
     }
 
@@ -90,6 +103,7 @@ function Intro() {
             state: {
               participantCode: normalizedCode,
               groupNumber: Number(normalizedGroupNumber),
+              language: localSession?.language ?? language,
               nextPath:
                 resumePhase === "calibrationb"
                   ? "/experienceb"
@@ -101,21 +115,23 @@ function Intro() {
           return;
         }
 
-        alert("This participant code has already been used, and no local progress was found on this browser.");
+        alert(t("intro.duplicateNoProgress"));
       } else {
-        alert("There was a problem saving your answers. Please contact the researcher.");
+        alert(t("intro.saveError"));
       }
       return;
     }
     writeLocalSession({
       participantCode: normalizedCode,
       groupNumber: Number(normalizedGroupNumber),
+      language,
       phase: "pre",
     });
-    navigate("/pre", {
+    navigate("/instructions", {
       state: {
         participantCode: normalizedCode,
         groupNumber: Number(normalizedGroupNumber),
+        language,
       },
     });
   };
@@ -147,7 +163,7 @@ function Intro() {
         }}>
           <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
           <Typography variant="h1" component="h1" sx={{ margin: 0 }}>
-            AI for Reading Comprehension
+            {t("intro.title")}
           </Typography>
         </Box>
         <Box sx={{
@@ -157,7 +173,7 @@ function Intro() {
           paddingRight: 4,
         }}>
           <Typography variant="body1">
-            Welcome to the experiment! In this study, we are exploring the use of AI in reading comprehension. You will be asked to read passages and answer some questions about them. The experiment will take approximately 1 hour to complete. Please make sure to enter your group number and participant code before starting the experiment.
+            {t("intro.welcome")}
           </Typography>
         </Box>
         <Box sx={{
@@ -169,8 +185,7 @@ function Intro() {
           justifyContent: "flex-end",
         }}>
           <Typography variant="caption" sx={{ margin: 0 }}>
-            Michaela Freire Griffith | TIDE Research Group on Interactive and
-            Distributed Technologies for Education
+            {t("intro.footer")}
           </Typography>
         </Box>
         <Box sx={{
@@ -188,7 +203,7 @@ function Intro() {
             id="outlined-basic"
             label={(
               <>
-                Group Number
+                {t("intro.groupNumber")}
                 <Box component="span" sx={{ color: "error.main", marginLeft: 0.5 }}>*</Box>
               </>
             )}
@@ -196,7 +211,7 @@ function Intro() {
             value={normalizedGroupNumber}
             onChange={(e) => handleGroupNumberChange(e.target.value)}
             error={hasGroupNumber && !groupNumberIsValid}
-            helperText={hasGroupNumber && !groupNumberIsValid ? "Enter a number from 1 to 4." : ""}
+            helperText={hasGroupNumber && !groupNumberIsValid ? t("intro.groupNumberError") : ""}
             inputProps={{ inputMode: "numeric", pattern: "[1-4]", maxLength: 1 }}
             sx={{
               width: introControlWidth,
@@ -214,7 +229,7 @@ function Intro() {
             id="outlined-basic"
             label={(
               <>
-                Participant Code
+                {t("intro.participantCode")}
                 <Box component="span" sx={{ color: "error.main", marginLeft: 0.5 }}>*</Box>
               </>
             )}
@@ -223,17 +238,34 @@ function Intro() {
             onChange={(e) => setParticipantCode(e.target.value)}
             sx={{ width: introControlWidth }}
           />
+          <FormControl size="small" sx={{ width: introControlWidth }}>
+            <InputLabel id="language-select-label">
+              {t("intro.experimentLanguage")}
+            </InputLabel>
+            <Select
+              labelId="language-select-label"
+              value={language}
+              label={t("intro.experimentLanguage")}
+              onChange={(event) => setLanguage(event.target.value as ExperimentLanguage)}
+            >
+              {languageOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {t(option.labelKey)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <Box sx={{ flexShrink: 0, width: introControlWidth }}>
             {canStartExperiment ? (
               <ColorButton
-                name="Start Experiment"
+                name={t("common.startExperiment")}
                 disabled={false}
                 onClick={handleNext}
                 fullWidth
               />
             ) : (
               <ColorButton
-                name="Start Experiment"
+                name={t("common.startExperiment")}
                 disabled
                 fullWidth
               />

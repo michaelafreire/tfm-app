@@ -1,8 +1,10 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ColorButton from "../components/ColorButton";
 import type { ExperimentRouteState } from "../experiment/routeState";
+import { setCalibrationOffset } from "../webgazer/webgazerManager";
 
 const CALIBRATION_POINTS = [
   { id: "top-left", top: "12%", left: "12%" },
@@ -17,7 +19,12 @@ const CALIBRATION_POINTS = [
 ];
 
 const CLICKS_PER_POINT = 5;
-const VALIDATION_POINT = { id: "validate-center", top: "50%", left: "50%" };
+const VALIDATION_POINTS = [
+  { id: "validate-upper-left", top: "30%", left: "30%" },
+  { id: "validate-upper-right", top: "30%", left: "70%" },
+  { id: "validate-lower-left", top: "70%", left: "30%" },
+  { id: "validate-lower-right", top: "70%", left: "70%" },
+];
 const VALIDATION_SAMPLES_PER_POINT = 12;
 const VALIDATION_SAMPLE_DELAY_MS = 80;
 
@@ -30,10 +37,11 @@ function Calibration() {
   const location = useLocation();
   const routeState = (location.state as ExperimentRouteState | null) ?? {};
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
   const nextPath = routeState.nextPath === "/experienceb" ? "/experienceb" : "/experiencea";
-  const nextExperienceName = nextPath === "/experienceb" ? "Experience B" : "Experience A";
+  const nextExperienceName = nextPath === "/experienceb" ? t("experienceIntro.titleB") : t("experienceIntro.titleA");
 
   const [activePointIndex, setActivePointIndex] = useState(0);
   const [clickCount, setClickCount] = useState(0);
@@ -41,7 +49,8 @@ function Calibration() {
   const [isScoring, setIsScoring] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [accuracy, setAccuracy] = useState<CalibrationScore | null>(null);
-  const [showValidationPoint, setShowValidationPoint] = useState(false);
+  const [activeValidationPointIndex, setActiveValidationPointIndex] = useState<number | null>(null);
+  const [showCalibrationPrompt, setShowCalibrationPrompt] = useState(true);
   const [showValidationPrompt, setShowValidationPrompt] = useState(false);
   const calibrationAreaRef = useRef<HTMLDivElement | null>(null);
 
@@ -81,7 +90,7 @@ function Calibration() {
             return;
           } catch (error) {
             console.error("Failed to prepare calibration", error);
-            setErrorMessage("The eye tracker could not be prepared. Please refresh the page and try again.");
+            setErrorMessage(t("calibration.prepareError"));
             setIsPreparing(false);
             return;
           }
@@ -91,7 +100,7 @@ function Calibration() {
       }
 
       if (!cancelled) {
-        setErrorMessage("The webcam preview did not finish loading. Please allow camera access and refresh the page.");
+        setErrorMessage(t("calibration.webcamError"));
         setIsPreparing(false);
       }
     };
@@ -108,18 +117,18 @@ function Calibration() {
         videoContainer.style.pointerEvents = "auto";
       }
     };
-  }, []);
+  }, [t]);
 
   if (!participantCode) {
-    return <div>Invalid access. Please restart the experiment.</div>;
+    return <div>{t("calibration.invalidAccess")}</div>;
   }
 
   const handleCalibrationClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (isPreparing || isScoring || isComplete) return;
+    if (showCalibrationPrompt || isPreparing || isScoring || isComplete) return;
 
     const webgazer = window.webgazer;
     if (!webgazer?.isReady?.()) {
-      setErrorMessage("The eye tracker is still warming up. Please wait a moment and try again.");
+      setErrorMessage(t("calibration.warmingUp"));
       return;
     }
 
@@ -152,7 +161,8 @@ function Calibration() {
     setIsPreparing(true);
     setIsScoring(false);
     setAccuracy(null);
-    setShowValidationPoint(false);
+    setActiveValidationPointIndex(null);
+    setShowCalibrationPrompt(true);
     setShowValidationPrompt(false);
 
     try {
@@ -169,6 +179,7 @@ function Calibration() {
       state: {
         participantCode,
         groupNumber,
+        language: routeState.language,
         asrsPartAScore: routeState.asrsPartAScore,
         asrsClassification: routeState.asrsClassification,
         ticksPerReading: routeState.ticksPerReading,
@@ -179,6 +190,10 @@ function Calibration() {
   const handleStartValidation = () => {
     setShowValidationPrompt(false);
     void runCalibrationScore();
+  };
+
+  const handleStartCalibration = () => {
+    setShowCalibrationPrompt(false);
   };
 
   const wait = (ms: number) =>
@@ -193,51 +208,66 @@ function Calibration() {
   const runCalibrationScore = async () => {
     const webgazer = window.webgazer;
     if (!webgazer?.isReady?.()) {
-      setErrorMessage("Calibration finished, but the validation score could not be computed because the tracker is not ready yet.");
+      setErrorMessage(t("calibration.scoreNotReady"));
       return;
     }
 
     setIsScoring(true);
     setErrorMessage("");
+    setCalibrationOffset({ x: 0, y: 0 });
 
     const pointErrors: number[] = [];
-    setShowValidationPoint(true);
-    await wait(600);
+    const xErrors: number[] = [];
+    const yErrors: number[] = [];
 
     const validationAreaRect = calibrationAreaRef.current?.getBoundingClientRect();
     if (validationAreaRect) {
-      const targetX = validationAreaRect.left + validationAreaRect.width * (parseFloat(VALIDATION_POINT.left) / 100);
-      const targetY = validationAreaRect.top + validationAreaRect.height * (parseFloat(VALIDATION_POINT.top) / 100);
-      const distances: number[] = [];
+      for (let pointIndex = 0; pointIndex < VALIDATION_POINTS.length; pointIndex += 1) {
+        const validationPoint = VALIDATION_POINTS[pointIndex];
+        const targetX = validationAreaRect.left + validationAreaRect.width * (parseFloat(validationPoint.left) / 100);
+        const targetY = validationAreaRect.top + validationAreaRect.height * (parseFloat(validationPoint.top) / 100);
+        const distances: number[] = [];
 
-      for (let sampleIndex = 0; sampleIndex < VALIDATION_SAMPLES_PER_POINT; sampleIndex += 1) {
-        await wait(VALIDATION_SAMPLE_DELAY_MS);
+        setActiveValidationPointIndex(pointIndex);
+        await wait(600);
 
-        const prediction = await readPrediction();
-        if (!prediction) continue;
+        for (let sampleIndex = 0; sampleIndex < VALIDATION_SAMPLES_PER_POINT; sampleIndex += 1) {
+          await wait(VALIDATION_SAMPLE_DELAY_MS);
 
-        const dx = prediction.x - targetX;
-        const dy = prediction.y - targetY;
-        distances.push(Math.hypot(dx, dy));
-      }
+          const prediction = await readPrediction();
+          if (!prediction) continue;
 
-      if (distances.length > 0) {
-        const averageDistance =
-          distances.reduce((sum, value) => sum + value, 0) / distances.length;
-        pointErrors.push(averageDistance);
+          const dx = prediction.x - targetX;
+          const dy = prediction.y - targetY;
+          distances.push(Math.hypot(dx, dy));
+          xErrors.push(dx);
+          yErrors.push(dy);
+        }
+
+        if (distances.length > 0) {
+          const averageDistance =
+            distances.reduce((sum, value) => sum + value, 0) / distances.length;
+          pointErrors.push(averageDistance);
+        }
       }
     }
 
-    setShowValidationPoint(false);
+    setActiveValidationPointIndex(null);
     setIsScoring(false);
 
     if (pointErrors.length === 0) {
-      setErrorMessage("Calibration completed, but no stable gaze predictions were available for scoring. You can recalibrate and try again.");
+      setErrorMessage(t("calibration.noPredictions"));
       return;
     }
 
     const averageErrorPx =
       pointErrors.reduce((sum, value) => sum + value, 0) / pointErrors.length;
+    const xOffset = xErrors.length > 0
+      ? xErrors.reduce((sum, value) => sum + value, 0) / xErrors.length
+      : 0;
+    const yOffset = yErrors.length > 0
+      ? yErrors.reduce((sum, value) => sum + value, 0) / yErrors.length
+      : 0;
     const measurementAreaRect = calibrationAreaRef.current?.getBoundingClientRect();
     const maxDistance = measurementAreaRect
       ? Math.hypot(measurementAreaRect.width, measurementAreaRect.height)
@@ -251,18 +281,19 @@ function Calibration() {
       accuracyPercent,
       averageErrorPx: Math.round(averageErrorPx),
     });
+    setCalibrationOffset({ x: xOffset, y: yOffset });
   };
 
   const completedPoints = Math.floor(clickCount / CLICKS_PER_POINT);
   const clicksOnActivePoint =
     isComplete ? CLICKS_PER_POINT : (clickCount % CLICKS_PER_POINT);
   const topMessage = accuracy
-    ? `Your accuracy is ${accuracy.accuracyPercent}%. Continue to ${nextExperienceName}, or recalibrate if you want a better result.`
+    ? t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })
     : isScoring
-      ? "Keep your eyes fixed on the purple dot in the center until the measurement finishes."
+      ? t("calibration.keepEyesFixed")
       : isPreparing
-        ? "Preparing webcam and tracker..."
-        : `Click each dot 5 times while keeping your head still. ${CLICKS_PER_POINT - clicksOnActivePoint} click(s) left on the current dot.`;
+        ? t("calibration.preparing")
+        : t("calibration.clickDots", { count: CLICKS_PER_POINT - clicksOnActivePoint });
 
   return (
     <Box
@@ -311,12 +342,12 @@ function Calibration() {
               }}
             >
               <ColorButton
-                name="Recalibrate"
+                name={t("common.recalibrate")}
                 disabled={isPreparing || isScoring}
                 onClick={handleResetCalibration}
               />
               <ColorButton
-                name="Continue"
+                name={t("common.continue")}
                 disabled={!isComplete || isPreparing || isScoring || showValidationPrompt}
                 onClick={handleContinue}
               />
@@ -363,7 +394,7 @@ function Calibration() {
             ) : null}
             {accuracy ? (
               <Typography variant="body2" sx={{ marginTop: 0.75 }}>
-                Average validation error: about {accuracy.averageErrorPx}px.
+                {t("calibration.averageError", { pixels: accuracy.averageErrorPx })}
               </Typography>
             ) : null}
           </Box>
@@ -379,7 +410,7 @@ function Calibration() {
                   component="button"
                   type="button"
                   onClick={handleCalibrationClick}
-                  disabled={!isActive || isPreparing}
+                  disabled={!isActive || isPreparing || showCalibrationPrompt}
                   sx={{
                     position: "absolute",
                     top: point.top,
@@ -389,7 +420,7 @@ function Calibration() {
                     height: isActive ? 30 : 24,
                     borderRadius: "50%",
                     border: "none",
-                    cursor: isActive && !isPreparing ? "pointer" : "default",
+                    cursor: isActive && !isPreparing && !showCalibrationPrompt ? "pointer" : "default",
                     backgroundColor: isDone ? "primary.main" : isActive ? "rgba(59,161,149,0.8)" : "rgba(59,161,149,0.18)",
                     boxShadow: isActive
                       ? "0 0 0 10px rgba(59,161,149,0.16)"
@@ -398,7 +429,7 @@ function Calibration() {
                     opacity: isDone || isActive ? 1 : 0.7,
                   }}
                 />
-                {isActive && !isPreparing ? (
+                {isActive && !isPreparing && !showCalibrationPrompt ? (
                   <Typography
                     variant="body2"
                     sx={{
@@ -426,13 +457,13 @@ function Calibration() {
             );
           })}
 
-          {showValidationPoint ? (
+          {activeValidationPointIndex !== null ? (
             <>
               <Typography
                 variant="body1"
                 sx={{
                   position: "absolute",
-                  top: "calc(50% - 58px)",
+                  top: `calc(${VALIDATION_POINTS[activeValidationPointIndex].top} - 58px)`,
                   left: "50%",
                   transform: "translate(-50%, -50%)",
                   color: "#7b3ff2",
@@ -442,13 +473,13 @@ function Calibration() {
                   pointerEvents: "none",
                 }}
               >
-                Look at the purple dot in the center
+                Look at the purple dot
               </Typography>
               <Box
                 sx={{
                   position: "absolute",
-                  top: VALIDATION_POINT.top,
-                  left: VALIDATION_POINT.left,
+                  top: VALIDATION_POINTS[activeValidationPointIndex].top,
+                  left: VALIDATION_POINTS[activeValidationPointIndex].left,
                   transform: "translate(-50%, -50%)",
                   width: 24,
                   height: 24,
@@ -462,6 +493,49 @@ function Calibration() {
           ) : null}
         </Box>
       </Box>
+
+      <Dialog
+        open={showCalibrationPrompt && !isPreparing && !errorMessage}
+        disableEscapeKeyDown
+        aria-labelledby="calibration-prompt-title"
+        PaperProps={{
+          sx: {
+            width: "min(90vw, 520px)",
+            borderRadius: 3,
+            bgcolor: "#7b3ff2",
+            color: "#fff",
+            textAlign: "center",
+            boxShadow: "0 20px 60px rgba(123,63,242,0.35)",
+          },
+        }}
+      >
+        <DialogContent sx={{ px: { xs: 3, sm: 4 }, pt: 4, pb: 1.5 }}>
+          <Typography id="calibration-prompt-title" variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+            {t("calibration.startTitle")}
+          </Typography>
+          <Typography variant="body1">
+            {t("calibration.startBody")}
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: "center", px: 4, pb: 4 }}>
+          <Button
+            variant="contained"
+            onClick={handleStartCalibration}
+            sx={{
+              minWidth: 96,
+              borderRadius: 2,
+              bgcolor: "#fff",
+              color: "#7b3ff2",
+              fontWeight: 700,
+              "&:hover": {
+                bgcolor: "rgba(255,255,255,0.9)",
+              },
+            }}
+          >
+            {t("common.ok")}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={showValidationPrompt}
@@ -480,10 +554,10 @@ function Calibration() {
       >
         <DialogContent sx={{ px: { xs: 3, sm: 4 }, pt: 4, pb: 1.5 }}>
           <Typography id="validation-prompt-title" variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-            A dot will appear in the middle
+            {t("calibration.promptTitle")}
           </Typography>
           <Typography variant="body1">
-            Keep your eyes on the purple dot until the measurement finishes.
+            {t("calibration.promptBody")}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "center", px: 4, pb: 4 }}>
@@ -501,7 +575,7 @@ function Calibration() {
               },
             }}
           >
-            OK
+            {t("common.ok")}
           </Button>
         </DialogActions>
       </Dialog>

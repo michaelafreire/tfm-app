@@ -1,15 +1,18 @@
 import { Box } from '@mui/material';
 import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
+import PartPill from '../components/PartPill';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import { readLocalDraft, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
+import type { ExperimentRouteState } from "../experiment/routeState";
 
-type Choice = string
+type Choice = string | { value: string; label: string };
 
 type Question = {
   id: string;
@@ -30,8 +33,10 @@ type Step = {
 
 function Post() {
   const location = useLocation();
-  const participantCode = location.state?.participantCode;
-  const groupNumber = location.state?.groupNumber;
+  const routeState = (location.state as ExperimentRouteState | null) ?? {};
+  const { t } = useTranslation();
+  const participantCode = routeState.participantCode;
+  const groupNumber = routeState.groupNumber;
   const contentRef = useRef<HTMLDivElement | null>(null);
   const draftKey = `tfm-draft:post:${participantCode ?? "unknown"}`;
   const savedDraft = useMemo(
@@ -57,9 +62,10 @@ function Post() {
     writeLocalSession({
       participantCode,
       groupNumber,
+      language: routeState.language,
       phase: "post",
     });
-  }, [groupNumber, participantCode]);
+  }, [groupNumber, participantCode, routeState.language]);
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTop = 0;
@@ -86,17 +92,17 @@ function Post() {
   const steps: Step[] = [
     {
       id: '1',
-      label: 'Cognitive Test',
-      description: 'Please answer the following questions about your experience during the experiment.',
+      label: t("post.experience.label"),
+      description: t("post.experience.description"),
       question: [
         {
           id: '1-1',
-          label: 'Stress levels?',
+          label: t("post.experience.stress"),
           type: 'multiple-choice'
         },
         {
           id: '1-2',
-          label: 'How do you feel?',
+          label: t("post.experience.feelings"),
           type: 'text',
           value: feelings,
           onChange: (e) => setFeelings(e.target.value),
@@ -106,10 +112,10 @@ function Post() {
     },
     {
       id: '2',
-      label: 'Next Steps',
-      description: 'Thank you for participating! Please click "Next" to complete the experiment and receive further instructions.',
+      label: t("post.next.label"),
+      description: t("post.next.description"),
       question: [
-        { id: '2-1', label: 'Should we keep in touch?', type: 'checkbox' },
+        { id: '2-1', label: t("post.next.keepInTouch"), type: 'checkbox' },
       ]
     },
   ];
@@ -127,7 +133,7 @@ function Post() {
       }
 
       clearDraft();
-      navigate('/final', { state: { participantCode, groupNumber } });
+      navigate('/final', { state: { participantCode, groupNumber, language: routeState.language } });
     }
   };
 
@@ -147,7 +153,7 @@ function Post() {
         height: "100%",
         gap: 1,
       }}>
-      <ExperimentHeader title="Post-experiment Questions">
+      <ExperimentHeader title={t("instructions.postTitle")} action={<PartPill label={t("part.four")} />}>
         <ProgressBar steps={steps} currentStep={currentStep} />
       </ExperimentHeader>
       <Box sx={{
@@ -193,7 +199,7 @@ function Post() {
           alignItems: "flex-end",
         }}>
           <ColorButton
-            name="Next"
+            name={t("common.next")}
             disabled={isNextDisabled()}
             onClick={handleNext}
           />

@@ -1,6 +1,7 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
 import type { ExperimentRouteState } from '../experiment/routeState';
@@ -87,6 +88,7 @@ function drawPong(context: CanvasRenderingContext2D, state: PongState, isRunning
 function Break() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const routeState = useMemo(
     () => (location.state as ExperimentRouteState | null) ?? {},
     [location.state],
@@ -107,22 +109,25 @@ function Break() {
     writeLocalSession({
       participantCode,
       groupNumber,
+      language: routeState.language,
       phase: 'break',
     });
-  }, [groupNumber, participantCode]);
+  }, [groupNumber, participantCode, routeState.language]);
 
   const goToExperienceB = useCallback(() => {
     if (participantCode && groupNumber) {
       writeLocalSession({
         participantCode,
         groupNumber,
+        language: routeState.language,
         phase: 'calibrationb',
       });
     }
 
-    navigate('/calibration', {
+    navigate('/experience-intro', {
       state: {
         ...routeState,
+        introExperience: 'B',
         nextPath: '/experienceb',
       },
     });
@@ -311,7 +316,7 @@ function Break() {
       }}
     >
       <ExperimentHeader
-        title="5-minute break"
+        title={t("instructions.breakTitle")}
         action={
         <Box
           sx={{
@@ -326,7 +331,7 @@ function Break() {
           }}
         >
           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-            Break timer
+            {t("instructions.breakTimer")}
           </Typography>
           <Typography variant="h6" sx={{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>
             {formatTime(secondsLeft)}
@@ -335,8 +340,7 @@ function Break() {
         }
       >
         <Typography variant="body2" sx={{ maxWidth: 900, mt: 1 }}>
-          Time for a 5-minute break. Feel free to play PONG in the screen, go to the bathroom, have some water or just
-          take some time to yourself. If you do not want a break, just click "Skip break".
+          {t("instructions.breakBody")}
         </Typography>
       </ExperimentHeader>
 
@@ -391,9 +395,9 @@ function Break() {
               }}
             />
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <ColorButton name="Start game" onClick={handleStartGame} disabled={isGameRunning || isBreakOver} />
+              <ColorButton name={t("common.startGame")} onClick={handleStartGame} disabled={isGameRunning || isBreakOver} />
               <Button variant="outlined" color="primary" onClick={handleResetGame} disabled={isBreakOver}>
-                Reset Pong
+                {t("common.resetPong")}
               </Button>
             </Box>
           </Box>
@@ -408,7 +412,7 @@ function Break() {
             pt: 1,
           }}
         >
-          <ColorButton name="Skip break" onClick={goToExperienceB} disabled={false} />
+          <ColorButton name={t("common.skipBreak")} onClick={goToExperienceB} disabled={false} />
         </Box>
       </Box>
 
@@ -423,11 +427,11 @@ function Break() {
           }}
         >
           <Typography variant="body1" sx={{ lineHeight: 1.35 }}>
-            Break is over. Click next to start Experience B.
+            {t("instructions.breakOver")}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ bgcolor: 'text.disabled', justifyContent: 'center', pb: 3 }}>
-          <ColorButton name="Next" onClick={goToExperienceB} disabled={false} />
+          <ColorButton name={t("common.next")} onClick={goToExperienceB} disabled={false} />
         </DialogActions>
       </Dialog>
     </Box>

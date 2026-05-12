@@ -1,6 +1,7 @@
 import { Box, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
 import experimentImage from '../assets/experiment.png';
 import AdaptivePaceSlider from '../components/Adaptive/AdaptivePaceSlider';
 import AdaptiveProgressBar from '../components/Adaptive/AdaptiveProgressBar';
@@ -10,6 +11,7 @@ import CoachBubble from '../components/Adaptive/CoachBubble';
 import ColorButton from '../components/ColorButton';
 import FormSpace from '../components/Form/FormSpace';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
+import PartPill from '../components/PartPill';
 import {
   adaptiveThemes,
   getAdaptiveTheme,
@@ -19,15 +21,19 @@ import {
 import type { ExperimentRouteState } from '../experiment/routeState';
 import { stepsByGroup } from './experienceStepsB';
 import type { Step } from './experienceStepsB';
+import { translateExperienceSteps } from './experienceTranslations';
 import { supabase } from "../supabaseClient";
 import { getCoachBubbleMessage } from "../services/coachBubble";
 import { getRandomProbeDelayMs } from "../experiment/probeTiming";
 import { readLocalDraft, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 import {
+  startTracking,
   pauseTracking,
   resumeTracking,
   setActiveSectionId,
+  setAoiRects,
   stopTracking,
+  getMissingSampleCount,
   getGazeData
 } from "../webgazer/webgazerManager";
 
@@ -41,6 +47,44 @@ type CoachBubbleState = {
   message: string;
   stepId: string;
 } | null;
+const GAZE_SAMPLE_INTERVAL_MS = 100;
+const gazeStorageKey = (participantCode: string, task: "A" | "B") => `tfm-gaze:${task}:${participantCode}`;
+
+function readStoredGazeData(participantCode: string, task: "A" | "B") {
+  try {
+    const rawStoredData = window.localStorage.getItem(gazeStorageKey(participantCode, task));
+    return rawStoredData ? JSON.parse(rawStoredData) : [];
+  } catch {
+    return [];
+  }
+}
+
+function getAoiSummary(stepId: string, stepData: ReturnType<typeof getGazeData>) {
+  const missingSamples = getMissingSampleCount(stepId);
+  const totalExpectedSamples = stepData.length || 1;
+  const progressSamples = stepData.filter((point) => point.aoi === "progress").length;
+  const readingSamples = stepData.filter((point) => point.aoi === "reading").length;
+  const screenTutSamples = stepData.filter((point) => point.aoi === "screen_tut").length;
+  const outsideSamples = stepData.filter((point) => point.aoi === "outside").length;
+  const screenTutDurationMs = screenTutSamples * GAZE_SAMPLE_INTERVAL_MS;
+  const outsideDurationMs = outsideSamples * GAZE_SAMPLE_INTERVAL_MS;
+  const missingPredictionDurationMs = missingSamples * GAZE_SAMPLE_INTERVAL_MS;
+
+  return {
+    progress_aoi_duration_ms: progressSamples * GAZE_SAMPLE_INTERVAL_MS,
+    reading_aoi_duration_ms: readingSamples * GAZE_SAMPLE_INTERVAL_MS,
+    screen_tut_aoi_duration_ms: screenTutDurationMs,
+    outside_aoi_duration_ms: outsideDurationMs,
+    missing_prediction_duration_ms: missingPredictionDurationMs,
+    off_reading_duration_ms: screenTutDurationMs + outsideDurationMs + missingPredictionDurationMs,
+    progress_aoi_percent: Math.round((progressSamples / totalExpectedSamples) * 100),
+    reading_aoi_percent: Math.round((readingSamples / totalExpectedSamples) * 100),
+    screen_tut_aoi_percent: Math.round((screenTutSamples / totalExpectedSamples) * 100),
+    outside_aoi_percent: Math.round((outsideSamples / totalExpectedSamples) * 100),
+    missing_prediction_percent: Math.round((missingSamples / totalExpectedSamples) * 100),
+    off_reading_percent: Math.round(((screenTutSamples + outsideSamples + missingSamples) / totalExpectedSamples) * 100),
+  };
+}
 
 function isReadingStep(step?: Step) {
   const firstQuestionId = step?.question[0]?.id ?? "";
@@ -50,6 +94,7 @@ function isReadingStep(step?: Step) {
 function ExperienceB() {
   const location = useLocation();
   const routeState = (location.state as ExperimentRouteState | null) ?? {};
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
@@ -84,6 +129,8 @@ function ExperienceB() {
   const [probeOpen, setProbeOpen] = useState(false);
   const [activeProbeStepId, setActiveProbeStepId] = useState<string | null>(null);
   const readingTimingsRef = useRef<Record<string, ReadingTiming>>({});
+  const progressAreaRef = useRef<HTMLDivElement | null>(null);
+  const readingAreaRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const stallTimerRef = useRef<number | null>(null);
   const probeTimerRef = useRef<number | null>(null);
@@ -108,6 +155,10 @@ function ExperienceB() {
     () => (groupNumber ? stepsByGroup[groupNumber] || [] : []),
     [groupNumber]
   );
+  const localizedRawSteps: Step[] = useMemo(
+    () => translateExperienceSteps(rawSteps, routeState.language ?? i18n.language, 2),
+    [i18n.language, rawSteps, routeState.language]
+  );
   const { clearDraft } = useLocalDraft(
     draftKey,
     {
@@ -126,9 +177,10 @@ function ExperienceB() {
     writeLocalSession({
       participantCode,
       groupNumber,
+      language: routeState.language,
       phase: "experienceb",
     });
-  }, [groupNumber, participantCode]);
+  }, [groupNumber, participantCode, routeState.language]);
 
   const handleChange = (id: string, value: string) => {
     setAnswers(prev => ({
@@ -196,7 +248,7 @@ function ExperienceB() {
   }, [completedReadingSteps, isAdaptive, showCoachBubble, stallDelayMs]);
 
   const steps: Step[] = useMemo(() => (
-    rawSteps.map(step => ({
+    localizedRawSteps.map(step => ({
       ...step,
       question: step.question.map(q => {
         if (q.type === 'likert-group') {
@@ -218,7 +270,7 @@ function ExperienceB() {
         };
       })
     }))
-  ), [answers, rawSteps]);
+  ), [answers, localizedRawSteps]);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -228,6 +280,8 @@ function ExperienceB() {
   }, [currentStep]);
 
   useEffect(() => {
+    startTracking();
+
     return () => {
       stopTracking();
       setActiveSectionId(null);
@@ -237,6 +291,38 @@ function ExperienceB() {
       if (paceIntervalRef.current) window.clearInterval(paceIntervalRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    const updateAoiRects = () => {
+      const nextRects = [];
+      const progressRect = progressAreaRef.current?.getBoundingClientRect();
+      const readingRect = readingAreaRef.current?.getBoundingClientRect();
+
+      if (progressRect) {
+        nextRects.push({ id: "progress" as const, rect: progressRect });
+      }
+      if (readingRect) {
+        nextRects.push({ id: "reading" as const, rect: readingRect });
+      }
+
+      setAoiRects(nextRects);
+    };
+
+    updateAoiRects();
+
+    const resizeObserver = new ResizeObserver(updateAoiRects);
+    if (progressAreaRef.current) resizeObserver.observe(progressAreaRef.current);
+    if (readingAreaRef.current) resizeObserver.observe(readingAreaRef.current);
+    window.addEventListener("resize", updateAoiRects);
+    window.addEventListener("scroll", updateAoiRects, true);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateAoiRects);
+      window.removeEventListener("scroll", updateAoiRects, true);
+      setAoiRects([]);
+    };
+  }, [currentStep, isAdaptive, selectedTheme]);
 
   useEffect(() => {
     const step = steps[currentStep];
@@ -575,20 +661,22 @@ function ExperienceB() {
 
       const perReadingRows = readingStepIds.map((stepId) => {
         const stepData = rawData.filter((point) => point.sectionId === stepId);
-        const sample_count = stepData.length;
+        const usableStepData = stepData.filter((point) => point.aoi !== "missing_prediction");
+        const sample_count = usableStepData.length;
+        const aoiSummary = getAoiSummary(stepId, stepData);
 
         const uniqueCoordinates = new Set<string>();
-        stepData.forEach((point) => {
+        usableStepData.forEach((point) => {
           uniqueCoordinates.add(`${Math.round(point.x)},${Math.round(point.y)}`);
         });
         const unique_sample_count = uniqueCoordinates.size;
 
         let dispersion = 0;
         if (sample_count > 0) {
-          const meanX = stepData.reduce((sum, p) => sum + Math.round(p.x), 0) / sample_count;
-          const meanY = stepData.reduce((sum, p) => sum + Math.round(p.y), 0) / sample_count;
+          const meanX = usableStepData.reduce((sum, p) => sum + Math.round(p.x), 0) / sample_count;
+          const meanY = usableStepData.reduce((sum, p) => sum + Math.round(p.y), 0) / sample_count;
 
-          const sumSquaredDistances = stepData.reduce((sum, p) => {
+          const sumSquaredDistances = usableStepData.reduce((sum, p) => {
             const dx = Math.round(p.x) - meanX;
             const dy = Math.round(p.y) - meanY;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -615,6 +703,7 @@ function ExperienceB() {
           sample_count,
           unique_sample_count,
           dispersion,
+          ...aoiSummary,
         };
       });
 
@@ -636,19 +725,26 @@ function ExperienceB() {
       }
 
       const escapeCsv = (value: string | number) => {
+        if (typeof value === "number" && Number.isNaN(value)) return "";
         const str = String(value ?? "");
         return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
       };
+      const experienceAGazeData = readStoredGazeData(participantCode, "A");
+      const csvData = [...experienceAGazeData, ...rawData];
 
       const csvRows = [
-        "x,y,t,route,section_id",
-        ...rawData.map((point) => (
+        "task,raw_x,raw_y,x,y,t,route,section_id,aoi",
+        ...csvData.map((point) => (
           [
+            escapeCsv(point.route === "/experiencea" ? "A" : point.route === "/experienceb" ? "B" : ""),
+            escapeCsv(point.rawX ?? ""),
+            escapeCsv(point.rawY ?? ""),
             escapeCsv(point.x),
             escapeCsv(point.y),
             escapeCsv(point.t),
             escapeCsv(point.route),
             escapeCsv(point.sectionId ?? ""),
+            escapeCsv(point.aoi ?? ""),
           ].join(",")
         )),
       ];
@@ -663,15 +759,17 @@ function ExperienceB() {
       a.href = url;
       a.download = `${participantCode}.csv`;
       a.click();
+      window.localStorage.removeItem(gazeStorageKey(participantCode, "A"));
 
       clearDraft();
       writeLocalSession({
         participantCode,
         groupNumber,
+        language: routeState.language,
         phase: "post",
       });
 
-      navigate('/post', { state: { participantCode, groupNumber } });
+      navigate('/post', { state: { participantCode, groupNumber, language: routeState.language } });
     }
   };
 
@@ -704,7 +802,7 @@ function ExperienceB() {
         height: "100%",
         gap: 1,
       }}>
-      <Box sx={{
+      <Box ref={progressAreaRef} sx={{
         bgcolor: "secondary.main",
         borderRadius: 3,
         p: 3,
@@ -713,7 +811,11 @@ function ExperienceB() {
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
+        position: "relative",
       }}>
+        <Box sx={{ position: "absolute", top: 24, right: 24 }}>
+          <PartPill label={t("part.three")} />
+        </Box>
         <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
         <Box
           sx={{
@@ -726,7 +828,7 @@ function ExperienceB() {
           }}
         >
           <Typography variant="body1" sx={{ fontWeight: 'bold', pt: 1 }}>
-            Reading Comprehension
+            {t("experienceIntro.titleB")}
           </Typography>
           {isAdaptive && selectedTheme ? (
             <Box sx={{ width: "100%", maxWidth: 420, ml: "auto" }}>
@@ -761,7 +863,7 @@ function ExperienceB() {
           <ProgressBar steps={steps} currentStep={currentStep} />
         )}
       </Box>
-      <Box sx={{
+      <Box ref={readingAreaRef} sx={{
         bgcolor: "secondary.paper",
         borderRadius: 3,
         p: 3,
@@ -820,7 +922,7 @@ function ExperienceB() {
           alignItems: "flex-end",
         }}>
           <ColorButton
-            name="Next"
+            name={t("common.next")}
             disabled={isNextDisabled()}
             onClick={handleNext}
           />

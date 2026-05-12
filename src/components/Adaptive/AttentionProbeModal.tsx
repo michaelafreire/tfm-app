@@ -1,4 +1,5 @@
 import { Box, Button, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 type AttentionProbeModalProps = {
   open: boolean;
@@ -12,6 +13,8 @@ const PROBE_OPTIONS: Array<"task-focused" | "distracted by thoughts" | "other"> 
 ];
 
 function AttentionProbeModal({ open, onSelect }: AttentionProbeModalProps) {
+  const { t } = useTranslation();
+
   if (!open) return null;
 
   return (
@@ -38,10 +41,10 @@ function AttentionProbeModal({ open, onSelect }: AttentionProbeModalProps) {
         }}
       >
         <Typography variant="body1" sx={{ fontWeight: "bold", mb: 1 }}>
-          Attention Check
+          {t("attentionProbe.title")}
         </Typography>
         <Typography variant="body2" sx={{ mb: 2 }}>
-          Just before this, were you:
+          {t("attentionProbe.prompt")}
         </Typography>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
           {PROBE_OPTIONS.map((option) => (
@@ -56,7 +59,7 @@ function AttentionProbeModal({ open, onSelect }: AttentionProbeModalProps) {
                 color: "text.primary",
               }}
             >
-              {option}
+              {t(`attentionProbe.options.${option}`)}
             </Button>
           ))}
         </Box>

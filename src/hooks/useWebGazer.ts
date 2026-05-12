@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { loadWebGazer } from "../webgazer/loadWebgazer";
-import { addGazePoint, setWebGazerReady } from "../webgazer/webgazerManager";
+import { addGazePoint, setCurrentRoute, setWebGazerReady } from "../webgazer/webgazerManager";
 
 type WebGazerMode = "calibration" | "tracking" | "inactive";
 
@@ -50,6 +50,7 @@ export function useWebGazer() {
 
   useEffect(() => {
     routeRef.current = location.pathname;
+    setCurrentRoute(location.pathname);
   }, [location.pathname]);
 
   useEffect(() => {

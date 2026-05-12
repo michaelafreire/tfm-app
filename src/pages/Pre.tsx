@@ -1,17 +1,19 @@
 import { Box } from '@mui/material';
 import ColorButton from '../components/ColorButton';
 import ExperimentHeader from '../components/ExperimentHeader';
+import PartPill from '../components/PartPill';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
 import FormSpace from '../components/Form/FormSpace';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "../supabaseClient";
 import { computeAsrsProfile } from "../experiment/adaptiveConfig";
 import type { ExperimentRouteState } from "../experiment/routeState";
 import { readLocalDraft, readLocalSession, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 
-type Choice = string
+type Choice = string | { value: string; label: string };
 
 type Question = {
   id: string;
@@ -35,6 +37,7 @@ function Pre() {
   const location = useLocation();
   const routeState = (location.state as ExperimentRouteState | null) ?? {};
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -91,9 +94,10 @@ function Pre() {
     writeLocalSession({
       participantCode,
       groupNumber,
+      language: routeState.language,
       phase: "pre",
     });
-  }, [groupNumber, participantCode]);
+  }, [groupNumber, participantCode, routeState.language]);
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollTop = 0;
@@ -126,65 +130,29 @@ function Pre() {
     ]);
   }
 
+  const degreeChoices: Choice[] = [
+    { value: "Bachelor's Degree", label: t("pre.degree.bachelor") },
+    { value: "Master's Degree", label: t("pre.degree.master") },
+    { value: "PhD", label: t("pre.degree.phd") },
+  ];
+  const asrsChoices: Choice[] = [
+    { value: "Never", label: t("pre.asrsChoices.never") },
+    { value: "Rarely", label: t("pre.asrsChoices.rarely") },
+    { value: "Sometimes", label: t("pre.asrsChoices.sometimes") },
+    { value: "Often", label: t("pre.asrsChoices.often") },
+    { value: "Very Often", label: t("pre.asrsChoices.veryOften") },
+  ];
+
   const steps: Step[] = [
     {
       id: '1',
-      label: 'Consent Form',
-      description: `Please read the consent form carefully and provide your initials to indicate your agreement to participate in this experiment:
-
-    # Consent Form
-
-## AI Reading Comprehension Study (Web-Based)
-
-Purpose
-
-This study examines how people interact with AI systems during reading comprehension tasks.
-
-What You Will Do
-
-If you participate, you will:
-
-* Complete short reading comprehension tasks with AI support
-* Have your eye movements recorded using **WebGrazer**
-* Complete a short self-report questionnaire (ASRS)
-
-Eye Tracking (WebGrazer)
-
-* A standard webcam is used during the study
-* The webcam **does not record video or images**
-* Only **screen gaze coordinates (x/y positions)** are collected
-
-Questionnaire (ASRS)
-
-* Measures **self-reported inattention**
-* Used for research only
-* **No diagnosis, labeling, or clinical classification** will be made
-
-Data Use
-
-* Responses, interaction logs, and gaze coordinates are collected
-* Data is anonymized and used for research only
-* No video or identifiable images are stored
-
-Voluntary Participation
-
-* Participation is voluntary
-* You may stop at any time without penalty
-
-Consent
-
-By continuing, you confirm that you:
-
-* Understand the study
-* Agree to participate voluntarily
-* Understand that webcam use only records gaze coordinates, not images or video
-* Understand the ASRS is not a diagnostic tool
-`,
+      label: t("pre.consent.label"),
+      description: t("pre.consent.description"),
 
       question: [
         {
           id: '1-1',
-          label: 'Please provide your initials:',
+          label: t("pre.consent.initials"),
           type: 'text',
           value: consent,
           onChange: (e) => setConsent(e.target.value),
@@ -194,21 +162,21 @@ By continuing, you confirm that you:
     },
     {
       id: '2',
-      label: 'About you',
-      description: 'Please answer the following questions about yourself.',
+      label: t("pre.about.label"),
+      description: t("pre.about.description"),
       question: [
         {
           id: '2-1',
-          label: 'What degree are you <strong>currently pursuing</strong>?',
+          label: t("pre.about.degree"),
           type: 'multiple-choice',
           value: demograph_1,
           onChange: (e) => setDemograph1(e.target.value),
-          choice: ["Bachelor's Degree", "Master's Degree", "PhD"],
+          choice: degreeChoices,
           required: true,
         },
         {
           id: '2-2',
-          label: 'When did you <strong>begin</strong> this program?',
+          label: t("pre.about.birthDate"),
           type: 'date',
           value: demograph_2,
           onDateChange: (value) => setDemograph2(value),
@@ -216,7 +184,7 @@ By continuing, you confirm that you:
         },
         {
           id: '2-3',
-          label: 'What is your <strong>nationality</strong>?',
+          label: t("pre.about.nationality"),
           type: 'text',
           value: demograph_3,
           onChange: (e) => setDemograph3(e.target.value),
@@ -224,7 +192,7 @@ By continuing, you confirm that you:
         },
         {
           id: '2-4',
-          label: 'In which country is your <strong>current residence</strong>?',
+          label: t("pre.about.residence"),
           type: 'text',
           value: demograph_4,
           onChange: (e) => setDemograph4(e.target.value),
@@ -234,61 +202,61 @@ By continuing, you confirm that you:
     },
     {
       id: '3',
-      label: 'Adult Self-Report Scale',
-      description: "Check the box that best describes how you have felt and conducted yourself over the past 6 months.",
+      label: t("pre.asrs.label"),
+      description: t("pre.asrs.description"),
       question: [
         {
           id: '3-1',
-          label: '1. How often do you have trouble wrapping up the final details of a project, once the challenging parts have been done?',
+          label: t("pre.asrs.q1"),
           type: 'multiple-choice',
           value: ASRS1,
           onChange: (e) => setASRS1(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
         {
           id: '3-2',
-          label: '2. How often do you have difficulty getting things in order when you have to do a task that requires organization?',
+          label: t("pre.asrs.q2"),
           type: 'multiple-choice',
           value: ASRS2,
           onChange: (e) => setASRS2(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
         {
           id: '3-3',
-          label: '3. How often do you have problems remembering appointments or obligations?',
+          label: t("pre.asrs.q3"),
           type: 'multiple-choice',
           value: ASRS3,
           onChange: (e) => setASRS3(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
         {
           id: '3-4',
-          label: '4. When you have a task that requires a lot of thought, how often do you avoid or delay getting started?',
+          label: t("pre.asrs.q4"),
           type: 'multiple-choice',
           value: ASRS4,
           onChange: (e) => setASRS4(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
         {
           id: '3-5',
-          label: '5. How often do you fidget or squirm with your hands or feet when you have to sit down for a long time?',
+          label: t("pre.asrs.q5"),
           type: 'multiple-choice',
           value: ASRS5,
           onChange: (e) => setASRS5(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
         {
           id: '3-6',
-          label: '6. How often do you feel overly active and compelled to do things, like you were driven by a motor?',
+          label: t("pre.asrs.q6"),
           type: 'multiple-choice',
           value: ASRS6,
           onChange: (e) => setASRS6(e.target.value),
-          choice: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+          choice: asrsChoices,
           required: true,
         },
       ]
@@ -305,13 +273,16 @@ By continuing, you confirm that you:
         writeLocalSession({
           participantCode,
           groupNumber: Number(groupNumber),
+          language: routeState.language,
           phase: "calibrationa",
         });
 
-        navigate('/calibration', {
+        navigate('/experience-intro', {
           state: {
             participantCode,
             groupNumber,
+            language: routeState.language,
+            introExperience: "A",
             nextPath: "/experiencea",
             ...asrsProfile,
           },
@@ -359,7 +330,7 @@ By continuing, you confirm that you:
         height: "100%",
         gap: 1,
       }}>
-      <ExperimentHeader title="Pre-experiment Questions">
+      <ExperimentHeader title={t("instructions.preTitle")} action={<PartPill label={t("part.one")} />}>
         <ProgressBar steps={steps} currentStep={currentStep} />
       </ExperimentHeader>
       <Box sx={{
@@ -404,7 +375,7 @@ By continuing, you confirm that you:
           alignItems: "flex-end",
         }}>
           <ColorButton
-            name="Next"
+            name={t("common.next")}
             disabled={isNextDisabled()}
             onClick={handleNext}
           />

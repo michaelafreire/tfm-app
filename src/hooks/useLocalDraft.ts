@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ExperimentLanguage } from '../i18n';
 
 export type LocalSession = {
   participantCode: string;
   groupNumber: number;
+  language?: ExperimentLanguage;
   phase: 'pre' | 'calibrationa' | 'experiencea' | 'break' | 'calibrationb' | 'experienceb' | 'post';
 };
 

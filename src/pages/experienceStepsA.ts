@@ -1,6 +1,6 @@
 // experienceSteps.tsx
 
-type Choice = string;
+type Choice = string | { value: string; label: string };
 
 type LikertRow = {
   id: string;
@@ -39,8 +39,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
-      question: []
+      description: 'This is Reading Experience A. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience A.',      question: []
     },
     {
       id: '2',
@@ -255,7 +254,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
+      description: 'This is Reading Experience A. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience A.',
       question: []
     },
     {
@@ -474,7 +473,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
+      description: 'This is Reading Experience A. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience A.',
       question: []
     },
     {
@@ -681,7 +680,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Comprehension Experience 1. In the following section, you will read three passages. After completing each passage, mark it as complete and answer four questions related to the text. Once you have finished all three passages, you will complete a brief questionnaire consisting of nine questions specifically about your experience in Reading Comprehension Experience 1.',
+      description: 'This is Reading Experience A. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience A.',
       question: []
     },
     {
