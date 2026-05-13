@@ -56,6 +56,7 @@ type FormSpaceProps = {
   markerStyle?: MarkerStyle;
   adaptiveTheme?: AdaptiveTheme;
   checkpointPlacementsByStep?: Record<string, CheckpointPlacement[]>;
+  readingIntroByStep?: Record<string, React.ReactNode>;
   shiningCheckpoint?: {
     stepId: string;
     checkpointIndex: number;
@@ -86,22 +87,27 @@ function MarkerIcon({ style, size = 20 }: { style: MarkerStyle; size?: number })
 }
 
 function CheckpointDivider({
+  stepId,
   checkpointIndex,
   isReached,
   isShining,
   markerStyle,
   theme,
 }: {
+  stepId: string;
   checkpointIndex: number;
   isReached: boolean;
   isShining: boolean;
   markerStyle: MarkerStyle;
   theme: AdaptiveTheme;
 }) {
+  const { t } = useTranslation();
   const markerColor = getMarkerColor(markerStyle, theme);
 
   return (
     <Box
+      data-checkpoint-step={stepId}
+      data-checkpoint-index={checkpointIndex}
       sx={{
         my: 3,
         display: "grid",
@@ -110,6 +116,7 @@ function CheckpointDivider({
         gap: 1.5,
         color: isReached ? markerColor : alpha(markerColor, 0.5),
         animation: isShining ? "inlineCheckpointShine 0.9s ease-out" : "none",
+        transition: "color 900ms ease",
         "@keyframes inlineCheckpointShine": {
           "0%": { transform: "scale(0.98)", filter: "drop-shadow(0 0 0 rgba(255,255,255,0))" },
           "35%": { transform: "scale(1.02)", filter: `drop-shadow(0 0 16px ${alpha(markerColor, 0.75)})` },
@@ -117,7 +124,7 @@ function CheckpointDivider({
         },
       }}
     >
-      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16) }} />
+      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16), transition: "background-color 900ms ease" }} />
       <Box
         sx={{
           px: 2,
@@ -132,12 +139,13 @@ function CheckpointDivider({
           fontSize: "0.78rem",
           color: isReached ? markerColor : "text.secondary",
           whiteSpace: "nowrap",
+          transition: "background-color 900ms ease, border-color 900ms ease, color 900ms ease",
         }}
       >
         <MarkerIcon style={markerStyle} size={18} />
-        Checkpoint {checkpointIndex + 1}: key idea complete
+        {t("adaptive.checkpointText", { number: checkpointIndex + 1 })}
       </Box>
-      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16) }} />
+      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16), transition: "background-color 900ms ease" }} />
     </Box>
   );
 }
@@ -211,27 +219,46 @@ function renderDescription(
     );
   }
 
-  if (checkpointOptions && checkpointOptions.checkpointCount > 1 && nodes.length > 1) {
-    const dividerCount = checkpointOptions.checkpointCount - 1;
-    const placements = checkpointOptions.placements?.slice(0, dividerCount) ?? [];
-    const insertAfterIndexes = new Set(
-      placements.length > 0
-        ? placements.map((placement) =>
-            Math.max(0, Math.min(nodes.length - 2, placement.afterParagraph - 1))
-          )
-        : Array.from({ length: dividerCount }, (_, index) =>
-            Math.max(0, Math.min(nodes.length - 2, Math.round(((index + 1) * nodes.length) / checkpointOptions.checkpointCount) - 1))
-          )
-    );
+  if (checkpointOptions && checkpointOptions.checkpointCount > 0 && nodes.length > 0) {
+    const internalDividerCount = Math.max(0, checkpointOptions.checkpointCount - 1);
+    const maxInsertIndex = Math.max(0, nodes.length - 2);
+    const insertAfterIndexes: number[] = [];
+    const usedInsertIndexes = new Set<number>();
+
+    checkpointOptions.placements?.slice(0, internalDividerCount).forEach((placement) => {
+      const index = Math.max(0, Math.min(maxInsertIndex, placement.afterParagraph - 1));
+      if (!usedInsertIndexes.has(index)) {
+        insertAfterIndexes.push(index);
+        usedInsertIndexes.add(index);
+      }
+    });
+
+    for (let index = 0; insertAfterIndexes.length < internalDividerCount && index < internalDividerCount; index += 1) {
+      const fallbackIndex = Math.max(
+        0,
+        Math.min(maxInsertIndex, Math.round(((index + 1) * nodes.length) / checkpointOptions.checkpointCount) - 1)
+      );
+      if (!usedInsertIndexes.has(fallbackIndex)) {
+        insertAfterIndexes.push(fallbackIndex);
+        usedInsertIndexes.add(fallbackIndex);
+      }
+    }
+
+    while (insertAfterIndexes.length < internalDividerCount) {
+      insertAfterIndexes.push(maxInsertIndex);
+    }
+
+    insertAfterIndexes.sort((a, b) => a - b);
     const checkpointNodes: React.ReactNode[] = [];
     let checkpointIndex = 0;
 
     nodes.forEach((node, nodeIndex) => {
       checkpointNodes.push(node);
-      if (insertAfterIndexes.has(nodeIndex) && checkpointIndex < dividerCount) {
+      while (insertAfterIndexes[checkpointIndex] === nodeIndex && checkpointIndex < internalDividerCount) {
         checkpointNodes.push(
           <CheckpointDivider
             key={`checkpoint-divider-${checkpointIndex}`}
+            stepId={checkpointOptions.stepId}
             checkpointIndex={checkpointIndex}
             isReached={checkpointOptions.completedCheckpointCount > checkpointIndex}
             isShining={
@@ -245,6 +272,21 @@ function renderDescription(
         checkpointIndex += 1;
       }
     });
+
+    checkpointNodes.push(
+      <CheckpointDivider
+        key={`checkpoint-divider-final`}
+        stepId={checkpointOptions.stepId}
+        checkpointIndex={checkpointOptions.checkpointCount - 1}
+        isReached={checkpointOptions.completedCheckpointCount >= checkpointOptions.checkpointCount}
+        isShining={
+          checkpointOptions.shiningCheckpoint?.stepId === checkpointOptions.stepId &&
+          checkpointOptions.shiningCheckpoint.checkpointIndex === checkpointOptions.checkpointCount - 1
+        }
+        markerStyle={checkpointOptions.markerStyle}
+        theme={checkpointOptions.theme}
+      />
+    );
 
     return checkpointNodes;
   }
@@ -266,6 +308,7 @@ function FormSpace({
   markerStyle = "diamond",
   adaptiveTheme,
   checkpointPlacementsByStep = {},
+  readingIntroByStep = {},
   shiningCheckpoint = null,
 }: FormSpaceProps) {
   const { t } = useTranslation();
@@ -288,6 +331,11 @@ function FormSpace({
               }}>
               {step.label.toUpperCase()}
             </Typography>
+            {readingIntroByStep[step.id] ? (
+              <Box sx={{ ml: 2, mt: 2, mb: 2 }}>
+                {readingIntroByStep[step.id]}
+              </Box>
+            ) : null}
             {(!readingStep || !readingCompleted) && (
               <Box
                 sx={{

@@ -21,7 +21,7 @@ export type InitialCheckpointPlan = {
 export type AdaptiveSuggestion = {
   source: "openai" | "fallback";
   recommendation: "add_checkpoint" | "reduce_checkpoints" | "keep_same";
-  target: "current_reading" | "next_reading";
+  target: "next_reading";
   message: string;
 };
 
@@ -39,22 +39,37 @@ type InitialPlanInput = {
   readings: ReadingPlanInput[];
 };
 
-type DuringReadingInput = {
-  language?: string;
-  currentCheckpointCount: number;
-  readingProgressPercent: number;
-  scrollDirectionChanges: number;
-  secondsWithoutProgress?: number;
-  probeResponse?: string;
-};
-
 type AfterReadingInput = {
   language?: string;
   currentCheckpointCount: number;
-  readingDurationMs: number | null;
-  expectedDurationMs: number;
   scrollDirectionChanges: number;
   probeResponse?: string;
+  probeResponseTimeMs?: number | null;
+  longestNoScrollMs?: number | null;
+};
+
+function normalizeLanguage(language?: string): "en" | "es" | "ca" {
+  if (language?.startsWith("es")) return "es";
+  if (language?.startsWith("ca")) return "ca";
+  return "en";
+}
+
+const fallbackText = {
+  en: {
+    reason: "Recommended from reading structure and ASRS profile.",
+    checkpointLabel: "Key idea complete",
+    suggestion: "Would you like to adjust the checkpoint plan?",
+  },
+  es: {
+    reason: "Recomendado según la estructura de la lectura y el perfil ASRS.",
+    checkpointLabel: "Idea clave completada",
+    suggestion: "¿Quieres ajustar el plan de checkpoints?",
+  },
+  ca: {
+    reason: "Recomanat segons l'estructura de la lectura i el perfil ASRS.",
+    checkpointLabel: "Idea clau completada",
+    suggestion: "Vols ajustar el pla de checkpoints?",
+  },
 };
 
 function sanitizeOptions(options: unknown, recommended: number) {
@@ -73,8 +88,9 @@ function sanitizeOptions(options: unknown, recommended: number) {
     .sort((a, b) => a - b);
 }
 
-function sanitizeInitialPlan(data: unknown, fallbackRecommended: number, readings: ReadingPlanInput[]): InitialCheckpointPlan | null {
+function sanitizeInitialPlan(data: unknown, fallbackRecommended: number, readings: ReadingPlanInput[], language?: string): InitialCheckpointPlan | null {
   if (!data || typeof data !== "object") return null;
+  const fallback = fallbackText[normalizeLanguage(language)];
   const raw = data as Record<string, unknown>;
   const recommendedCheckpoints = clampCheckpointCount(Number(raw.recommendedCheckpoints));
   if (!Number.isFinite(recommendedCheckpoints)) return null;
@@ -92,7 +108,7 @@ function sanitizeInitialPlan(data: unknown, fallbackRecommended: number, reading
             if (!checkpoint || typeof checkpoint !== "object") return null;
             const item = checkpoint as Record<string, unknown>;
             const afterParagraph = Math.max(1, Math.min(paragraphCount, Math.round(Number(item.afterParagraph))));
-            const label = String(item.label ?? "Key idea complete").slice(0, 48);
+            const label = String(item.label ?? fallback.checkpointLabel).slice(0, 48);
             if (!Number.isFinite(afterParagraph)) return null;
             return { afterParagraph, label };
           })
@@ -110,25 +126,26 @@ function sanitizeInitialPlan(data: unknown, fallbackRecommended: number, reading
   return {
     source: "openai",
     recommendedCheckpoints,
-    reason: String(raw.reason ?? "Recommended from reading structure and ASRS profile.").slice(0, 220),
+    reason: String(raw.reason ?? fallback.reason).slice(0, 220),
     options: sanitizeOptions(raw.options, recommendedCheckpoints || fallbackRecommended),
     readings: sanitizedReadings,
   };
 }
 
-function sanitizeSuggestion(data: unknown): AdaptiveSuggestion | null {
+function sanitizeSuggestion(data: unknown, language?: string): AdaptiveSuggestion | null {
   if (!data || typeof data !== "object") return null;
+  const fallback = fallbackText[normalizeLanguage(language)];
   const raw = data as Record<string, unknown>;
   const recommendation = raw.recommendation;
   const target = raw.target;
   if (recommendation !== "add_checkpoint" && recommendation !== "reduce_checkpoints" && recommendation !== "keep_same") return null;
-  if (target !== "current_reading" && target !== "next_reading") return null;
+  if (target !== "next_reading") return null;
 
   return {
     source: "openai",
     recommendation,
     target,
-    message: String(raw.message ?? "Would you like to adjust the checkpoint plan?").slice(0, 220),
+    message: String(raw.message ?? fallback.suggestion).slice(0, 220),
   };
 }
 
@@ -144,25 +161,9 @@ export async function getInitialCheckpointPlan(
       },
     });
     if (error) throw error;
-    return sanitizeInitialPlan(data, fallbackRecommended, input.readings);
+    return sanitizeInitialPlan(data, fallbackRecommended, input.readings, input.language);
   } catch (error) {
     console.warn("Falling back to local checkpoint recommendation", error);
-    return null;
-  }
-}
-
-export async function getDuringReadingSuggestion(input: DuringReadingInput): Promise<AdaptiveSuggestion | null> {
-  try {
-    const { data, error } = await supabase.functions.invoke("adaptive-checkpoints", {
-      body: {
-        event: "during_reading",
-        ...input,
-      },
-    });
-    if (error) throw error;
-    return sanitizeSuggestion(data);
-  } catch (error) {
-    console.warn("Falling back to local during-reading suggestion", error);
     return null;
   }
 }
@@ -176,7 +177,7 @@ export async function getAfterReadingSuggestion(input: AfterReadingInput): Promi
       },
     });
     if (error) throw error;
-    return sanitizeSuggestion(data);
+    return sanitizeSuggestion(data, input.language);
   } catch (error) {
     console.warn("Falling back to local after-reading suggestion", error);
     return null;

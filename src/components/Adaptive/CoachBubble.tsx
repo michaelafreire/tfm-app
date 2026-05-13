@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import type { AdaptiveTheme } from "../../experiment/adaptiveConfig";
 
 type CoachBubbleProps = {
@@ -9,6 +10,7 @@ type CoachBubbleProps = {
 };
 
 function CoachBubble({ message, theme, actionLabel, onAction }: CoachBubbleProps) {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -21,7 +23,6 @@ function CoachBubble({ message, theme, actionLabel, onAction }: CoachBubbleProps
         backgroundColor: "background.paper",
         border: `1px solid ${theme.soft}`,
         boxShadow: "0 12px 32px rgba(0, 0, 0, 0.12)",
-        maxWidth: 420,
         width: "100%",
       }}>
       <Box
@@ -38,7 +39,7 @@ function CoachBubble({ message, theme, actionLabel, onAction }: CoachBubbleProps
           flexShrink: 0,
         }}
       >
-        AI
+        {t("adaptive.aiLabel")}
       </Box>
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="body2" sx={{ color: "text.primary" }}>

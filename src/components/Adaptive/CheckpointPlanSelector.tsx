@@ -3,6 +3,7 @@ import { alpha } from "@mui/material/styles";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
+import { useTranslation } from "react-i18next";
 import type { AdaptiveTheme } from "../../experiment/adaptiveConfig";
 import { getMarkerColor, type MarkerStyle } from "./AdaptiveProgressBar";
 
@@ -18,13 +19,11 @@ type CheckpointPlanSelectorProps = {
   isLoading?: boolean;
 };
 
-const markerOptions: Array<{ value: MarkerStyle; label: string; icon: typeof DiamondRoundedIcon }> = [
-  { value: "diamond", label: "Diamonds", icon: DiamondRoundedIcon },
-  { value: "heart", label: "Hearts", icon: FavoriteRoundedIcon },
-  { value: "star", label: "Stars", icon: StarRoundedIcon },
+const markerOptions: Array<{ value: MarkerStyle; labelKey: string; icon: typeof DiamondRoundedIcon }> = [
+  { value: "diamond", labelKey: "adaptive.markers.diamond", icon: DiamondRoundedIcon },
+  { value: "heart", labelKey: "adaptive.markers.heart", icon: FavoriteRoundedIcon },
+  { value: "star", labelKey: "adaptive.markers.star", icon: StarRoundedIcon },
 ];
-
-const previewLabels = ["Start", "Key idea 1", "Key idea 2", "Summary"];
 
 function getCountOptions(recommendedCount: number) {
   const boundedRecommendation = Math.max(1, Math.min(5, recommendedCount));
@@ -51,22 +50,28 @@ function CheckpointPlanSelector({
   recommendationReason,
   isLoading = false,
 }: CheckpointPlanSelectorProps) {
+  const { t } = useTranslation();
   const countOptions = getCountOptions(recommendedCount);
   const SelectedMarkerIcon = markerOptions.find((option) => option.value === markerStyle)?.icon ?? DiamondRoundedIcon;
-  const previewCount = Math.min(selectedCount, previewLabels.length);
+  const previewCount = Math.min(selectedCount, 4);
   const markerColor = getMarkerColor(markerStyle, theme);
+  const getPreviewLabel = (index: number) => {
+    if (index === 0) return t("adaptive.previewStart");
+    if (index === previewCount - 1 && previewCount > 3) return t("adaptive.previewSummary");
+    return t("adaptive.previewKeyIdea", { number: index });
+  };
 
   return (
     <Box sx={{ mx: 2, mt: 3, display: "flex", flexDirection: "column", gap: 2.25 }}>
 
       <Box>
           <Typography variant="body1" sx={{ fontWeight: 700 }}>
-          {isLoading ? "Preparing your checkpoint plan." : "Your checkpoint plan is ready."}
+          {isLoading ? t("adaptive.preparingPlan") : t("adaptive.planReady")}
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
           {isLoading
-            ? "The AI is reviewing the reading structure and ASRS profile."
-            : "You can keep the recommended plan or make one small change before starting."}
+            ? t("adaptive.reviewingPlan")
+            : t("adaptive.planReadySubtitle")}
         </Typography>
       </Box>
 
@@ -94,18 +99,18 @@ function CheckpointPlanSelector({
             flexShrink: 0,
           }}
         >
-          AI
+          {t("adaptive.aiLabel")}
         </Box>
         <Box>
           <Typography variant="body2" sx={{ fontWeight: 700 }}>
             {isLoading
-              ? "I am preparing a checkpoint recommendation."
-              : `For these readings, I recommend ${recommendedCount} checkpoints at natural topic breaks.`}
+              ? t("adaptive.aiPreparing")
+              : t("adaptive.aiRecommendation", { count: recommendedCount })}
           </Typography>
           <Typography variant="body2" sx={{ mt: 0.5, color: "text.secondary" }}>
             {isLoading
-              ? "This usually takes a few seconds."
-              : recommendationReason ?? "Based on the text length, structure, and your ASRS profile."}
+              ? t("adaptive.aiTakesSeconds")
+              : recommendationReason ?? t("adaptive.aiDefaultReason")}
           </Typography>
         </Box>
       </Box>
@@ -115,7 +120,7 @@ function CheckpointPlanSelector({
 
       <Box>
         <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-          Number of checkpoints
+          {t("adaptive.numberOfCheckpoints")}
         </Typography>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 1 }}>
           {countOptions.map((count) => {
@@ -139,13 +144,13 @@ function CheckpointPlanSelector({
                 }}
               >
                 <Typography sx={{ fontWeight: 800, fontSize: "1.25rem" }}>{count}</Typography>
-                <Typography variant="caption">checkpoints</Typography>
+                <Typography variant="caption">{t("adaptive.checkpoints")}</Typography>
               </Button>
             );
           })}
         </Box>
         <Typography variant="caption" sx={{ mt: 0.75, color: "text.secondary", display: "block" }}>
-          {recommendedCount} checkpoints recommended for {readingCount} readings.
+          {t("adaptive.recommendedForReadings", { count: recommendedCount, readings: readingCount })}
         </Typography>
       </Box>
 
@@ -160,14 +165,14 @@ function CheckpointPlanSelector({
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              Marker style
+              {t("adaptive.markerStyle")}
             </Typography>
             <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              (optional)
+              {t("adaptive.optional")}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-            {markerOptions.map(({ value, label, icon: Icon }) => {
+            {markerOptions.map(({ value, labelKey, icon: Icon }) => {
               const selected = markerStyle === value;
               const optionColor = getMarkerColor(value, theme);
               return (
@@ -188,7 +193,7 @@ function CheckpointPlanSelector({
                     position: "relative",
                   }}
                 >
-                  {label}
+                  {t(labelKey)}
                   {selected ? (
                     <Box
                       component="span"
@@ -217,7 +222,7 @@ function CheckpointPlanSelector({
 
       <Box>
         <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-          Preview
+          {t("adaptive.preview")}
         </Typography>
         <Box
           sx={{
@@ -249,12 +254,12 @@ function CheckpointPlanSelector({
             {Array.from({ length: previewCount }, (_, index) => {
               const isStart = index === 0;
               return (
-                <Box key={previewLabels[index]} sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                <Box key={`preview-${index}`} sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <Box sx={{ color: isStart ? markerColor : alpha(markerColor, 0.58), height: 30 }}>
                     <SelectedMarkerIcon sx={{ fontSize: 28 }} />
                   </Box>
                   <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-                    {previewLabels[index]}
+                    {getPreviewLabel(index)}
                   </Typography>
                 </Box>
               );
@@ -262,7 +267,7 @@ function CheckpointPlanSelector({
           </Box>
         </Box>
         <Typography variant="caption" sx={{ mt: 1, color: "text.secondary", display: "block" }}>
-          Checkpoints are placed at natural topic boundaries to support focus and comprehension.
+          {t("adaptive.previewDescription")}
         </Typography>
       </Box>
         </>

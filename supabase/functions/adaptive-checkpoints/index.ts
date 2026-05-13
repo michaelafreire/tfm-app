@@ -11,27 +11,17 @@ type InitialPlanRequest = {
   }>;
 };
 
-type DuringReadingRequest = {
-  event: "during_reading";
-  language?: string;
-  currentCheckpointCount: number;
-  readingProgressPercent: number;
-  scrollDirectionChanges: number;
-  secondsWithoutProgress?: number;
-  probeResponse?: string;
-};
-
 type AfterReadingRequest = {
   event: "after_reading";
   language?: string;
   currentCheckpointCount: number;
-  readingDurationMs: number | null;
-  expectedDurationMs: number;
   scrollDirectionChanges: number;
   probeResponse?: string;
+  probeResponseTimeMs?: number | null;
+  longestNoScrollMs?: number | null;
 };
 
-type AdaptiveRequest = InitialPlanRequest | DuringReadingRequest | AfterReadingRequest;
+type AdaptiveRequest = InitialPlanRequest | AfterReadingRequest;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,7 +29,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const OPENAI_MODEL = Deno.env.get("OPENAI_MODEL") ?? "gpt-4.1-mini";
+const OPENAI_MODEL = Deno.env.get("OPENAI_MODEL") ?? "gpt-5.4-mini";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -75,43 +65,50 @@ function buildInitialPrompt(input: InitialPlanRequest) {
 
   return {
     task:
-      "Create an adaptive checkpoint plan for a reading-comprehension experiment. Use natural topic boundaries. Do not make clinical claims. ASRS is only a self-report research measure.",
+      "Create an adaptive checkpoint plan for a reading according to the following data. Use natural topic boundaries that make sense for the reader. Suggest more checkpoints if ASRS is high and if readings are longer and more complex, do the opposite if ASRS is low and readings are less complex.",
     language: input.language ?? "en",
     asrsPartAScore: input.asrsPartAScore ?? null,
     asrsClassification: input.asrsClassification ?? null,
     rules: [
-      "Recommend 1 to 5 checkpoints.",
-      "Most 500-700 word academic readings should use 3 or 4 checkpoints.",
-      "Use 5 only for very dense or high-support cases.",
+      "Recommend between 1 and 4 checkpoints.",
+      "Use 4 only for very dense or high-support cases.",
       "Use 1 only for very easy or very short readings.",
       "Return paragraph boundaries as 1-based paragraph indexes.",
       "The number of checkpoint boundary objects for each reading must be checkpointCount - 1.",
-      "Keep labels short and participant-friendly.",
+      "The chunks of text should be of similar lengths but making sure that the checkpoints fall on natural topic or subtopic boundaries when possible. Avoid splitting paragraphs.",
+      "Write every participant-facing string, including reason and checkpoint labels, in the requested language.",
     ],
     readings,
   };
 }
 
-function buildSuggestionPrompt(input: DuringReadingRequest | AfterReadingRequest) {
+function buildSuggestionPrompt(input: AfterReadingRequest) {
   return {
     task:
-      "Suggest whether to adjust checkpoint frequency for a reading-comprehension experiment. The participant must always decide whether to apply the change.",
+      "Suggest whether to adjust checkpoint frequency for the next reading in a reading-comprehension experiment. The participant must always decide whether to apply the change.",
     event: input.event,
     language: input.language ?? "en",
     currentCheckpointCount: input.currentCheckpointCount,
     scrollDirectionChanges: input.scrollDirectionChanges,
     probeResponse: input.probeResponse ?? null,
-    readingProgressPercent: "readingProgressPercent" in input ? input.readingProgressPercent : null,
-    secondsWithoutProgress: "secondsWithoutProgress" in input ? input.secondsWithoutProgress ?? null : null,
-    readingDurationMs: "readingDurationMs" in input ? input.readingDurationMs : null,
-    expectedDurationMs: "expectedDurationMs" in input ? input.expectedDurationMs : null,
+    probeResponseTimeMs: input.probeResponseTimeMs ?? null,
+    longestNoScrollMs: input.longestNoScrollMs ?? null,
     rules: [
-      "during_reading suggestions target current_reading.",
-      "after_reading suggestions target next_reading.",
-      "Suggest add_checkpoint if reading is slow, erratic, or probe is off-task.",
-      "Suggest reduce_checkpoints only if reading is smooth and fast, and currentCheckpointCount is above 1.",
+      "Suggestions target next_reading.",
+      "Base the recommendation only on the previous reading's probe result, raw probe response time, and scrolling behaviour.",
+      "Do not use total reading completion time. Slow reading can reflect careful, detailed reading.",
+      "Scrolling behaviour is represented by scrollDirectionChanges: higher values mean more back-and-forth movement; low values mean steadier downward progress.",
+      "longestNoScrollMs is the longest pause without scrolling during the reading. Treat only unusually long pauses as possible distraction; normal pauses may reflect careful reading.",
+      "Use probeResponseTimeMs as a raw signal. Decide from the context whether it seems meaningfully long; do not apply a fixed cutoff blindly.",
+      "Suggest add_checkpoint if scrolling was erratic, the probe was off-task, probe response time was meaningfully long, or longestNoScrollMs suggests a substantial pause.",
+      "Suggest reduce_checkpoints only if scrolling was steady, the probe was task-focused, probe response time was not meaningfully long, longestNoScrollMs was not concerning, and currentCheckpointCount is above 1.",
       "Suggest keep_same if the plan appears appropriate.",
-      "Use a concise, friendly message framed as a question when recommending a change.",
+      "Use a concise, friendly, formative-feedback tone. The message should support the participant and should not make them feel judged.",
+      "Do not mention behavioural metrics directly. Do not say things like 'you scrolled a lot', 'you paused for a long time', 'your probe response was slow', or name any metric.",
+      "If recommending more checkpoints, frame it around the text or reading support, for example that the previous text may have been complex and smaller sections could help.",
+      "If recommending fewer checkpoints or keeping the same plan, give positive feedback that the current setup seems to be working well.",
+      "Frame recommendations as a choice or question; the participant must always decide.",
+      "Write the participant-facing message in the requested language.",
     ],
   };
 }
@@ -166,7 +163,7 @@ const suggestionSchema = {
     },
     target: {
       type: "string",
-      enum: ["current_reading", "next_reading"],
+      enum: ["next_reading"],
     },
     message: { type: "string" },
   },

@@ -281,6 +281,35 @@ translations.ca = {
   positiveBooks: {
     ...translations.es.positiveBooks,
     label: "Quatre llibres positius sobre el món",
+    description: `
+        <strong>Factfulness – Hans Rosling amb Ola Rosling i Anna Rosling Rönnlund</strong>
+
+        A Factfulness, el professor Hans Rosling, juntament amb dos col·laboradors, planteja preguntes senzilles sobre el món. Preguntes com ara «quantes nenes acaben l'escola?» i «quin percentatge de la població mundial és pobre?». Resulta que la majoria de nosaltres responem aquestes preguntes de manera completament equivocada. Per què passa això? Factfulness intenta explicar-ho mostrant que els éssers humans tenim diversos instints que distorsionen la nostra perspectiva.
+
+        Per exemple, la majoria de persones divideix el món entre NOSALTRES i ELLS. A més, sovint creiem que les coses estan empitjorant. I consumim grans quantitats de mitjans que utilitzen un model de vendes basat a fer-nos sentir por.
+
+        Però, segons els autors, el món no està tan malament com pensem. Sí, hi ha preocupacions reals. Però hauríem d'adoptar una mentalitat de factfulness: mantenir només opinions recolzades per fets sòlids. Aquest llibre no tracta les raons profundes de la pobresa o el progrés, ni què s'hauria de fer respecte d'aquests problemes. Se centra en els nostres biaixos instintius i ofereix consells pràctics per ajudar-nos a veure el bo i el dolent del món.
+
+        <strong>Enlightenment Now – Steven Pinker</strong>
+
+        Les coses empitjoren cada dia? El progrés és una meta impossible? A Enlightenment Now, Steven Pinker observa el panorama general del progrés humà i hi troba bones notícies. Vivim vides més llargues, saludables, lliures i felices. Pinker ens demana que deixem de prestar tanta atenció als titulars negatius i a les notícies que anuncien la fi del món. En canvi, ens mostra dades seleccionades amb cura. En 75 gràfics sorprenents, veiem que la seguretat, la pau, el coneixement i la salut milloren arreu del món. Tanmateix, quan l'evidència no dona suport al seu argument, la descarta. La desigualtat econòmica, afirma, no és realment un problema, perquè en realitat no és tan important per al benestar humà. És inevitable preguntar-se quantes persones que viuen realment en la pobresa hi estarien d'acord.
+
+        El problema real, argumenta Pinker, és que els valors il·lustrats de la raó i la ciència estan sota atac. Quan comentaristes i demagogs apel·len al tribalisme, al fatalisme i a la desconfiança de la gent, correm el risc de causar danys irreparables a institucions importants com la democràcia i la cooperació mundial.
+
+        <strong>The Rational Optimist – Matt Ridley</strong>
+
+        Durant més de dos-cents anys, els pessimistes han guanyat el debat públic. Ens diuen que les coses estan empitjorant. Però, de fet, la vida està millorant. Els ingressos, la disponibilitat d'aliments i l'esperança de vida augmenten; les malalties, la violència i la mortalitat infantil disminueixen. Aquestes tendències passen arreu del món. Àfrica està sortint lentament de la pobresa, igual que Àsia ho va fer abans. Internet, els telèfons mòbils i el comerç mundial estan millorant molt la vida de milions de persones.
+
+        L'autor supervendes Matt Ridley no només explica com estan millorant les coses; també ens dona raons de per què. Mostra com la cultura humana evoluciona en una direcció positiva gràcies a l'intercanvi d'idees i a l'especialització. Aquest llibre valent examina tota la història humana, des de l'edat de pedra fins al segle XXI, i canvia la idea que tot va costa avall. El got és realment mig ple.
+
+        <strong>The Great Surge – Steven Radelet</strong>
+
+        La majoria de persones creu que els països en desenvolupament es troben en una situació terrible: pateixen una pobresa increïble, estan governats per dictadors i tenen poques esperances d'un canvi significatiu. Però, sorprenentment, això és lluny de la realitat. La realitat és que s'està produint una gran transformació. Durant els últims 20 anys, més de 700 milions de persones han augmentat els seus ingressos i han sortit de la pobresa. A més, cada any moren sis milions menys d'infants per malalties, milions de nenes més van a l'escola i milions de persones tenen accés a aigua neta.
+
+        Això passa en països en desenvolupament de tot el món. El final de la Guerra Freda, el desenvolupament de noves tecnologies i un lideratge nou i valent han ajudat a millorar la vida de centenars de milions de persones en països pobres.
+
+        The Great Surge descriu com està passant tot això i, encara més important, ens mostra com podem accelerar el procés.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. Quin llibre parla de com podem continuar fent que les coses millorin encara més?`,
       "2. Quin llibre cobreix un llarg període de la història humana?",
@@ -291,6 +320,31 @@ translations.ca = {
   languageEvolution: {
     ...translations.es.languageEvolution,
     label: "Com va evolucionar el llenguatge humà",
+    description: `
+        <strong>A</strong>
+
+        Gràcies al camp de la lingüística sabem molt sobre el desenvolupament de les més de 5.000 llengües que existeixen avui. Podem descriure'n la gramàtica i la pronunciació i veure com les seves formes parlades i escrites han canviat amb el temps. Per exemple, entenem els orígens del grup de llengües indoeuropees, que inclou el noruec, l'hindi i l'anglès, i podem rastrejar-les fins a tribus de l'Europa oriental cap a l'any 3000 aC.
+
+        Així doncs, hem traçat una gran part de la història del llenguatge, però encara hi ha àrees sobre les quals sabem poc. Els experts comencen a recórrer al camp de la biologia evolutiva per descobrir com es va desenvolupar l'espècie humana fins a ser capaç d'utilitzar el llenguatge. Fins ara, hi ha moltes més preguntes i mitges teories que respostes.
+
+        <strong>B</strong>
+
+        Sabem que el llenguatge humà és molt més complex que el dels nostres parents més propers i intel·ligents, com els ximpanzés. Podem expressar pensaments complexos, transmetre emocions subtils i comunicar-nos sobre conceptes abstractes com el passat i el futur. I ho fem seguint un conjunt de regles estructurals, conegudes com a gramàtica. Només els humans fem servir un sistema innat de regles per governar l'ordre de les paraules? Potser no, ja que algunes investigacions podrien suggerir que els dofins comparteixen aquesta capacitat perquè són capaços de reconèixer quan es trenquen aquestes regles.
+
+        <strong>C</strong>
+
+        Si volem saber d'on prové la nostra capacitat per al llenguatge complex, hem d'observar en què es diferencien els nostres cervells dels d'altres animals. Això es relaciona amb alguna cosa més que la mida del cervell; és important què més pot fer el nostre cervell i quan i per què va evolucionar d'aquesta manera. I per a això hi ha molt poques pistes físiques; els artefactes deixats pels nostres avantpassats no ens diuen quin tipus de parla eren capaços de produir. Una cosa que sí que podem veure en les restes dels primers humans, però, és el desenvolupament de la boca, la gola i la llengua. Fa uns 100.000 anys, els humans havien evolucionat la capacitat de crear sons complexos. Abans d'això, els biòlegs evolutius només poden suposar si els primers humans es comunicaven o no amb sons més bàsics.
+
+        <strong>D</strong>
+
+        Una altra pregunta és què hi havia en els cervells humans que va permetre que el llenguatge evolucionés d'una manera que no va ocórrer en altres primats. En algun moment, els nostres cervells van ser capaços de fer que les nostres boques produïssin sons vocàlics i consonàntics, i vam desenvolupar la capacitat d'inventar paraules per anomenar les coses que ens envoltaven. Aquests van ser els ingredients bàsics del llenguatge complex. El canvi següent hauria estat posar aquestes paraules en oracions, de manera semblant al «protolenguatge» que fan servir els infants quan aprenen a parlar. Ningú sap si el pas següent —afegir gramàtica per indicar passat, present i futur, per exemple, o plurals i oracions relatives— va requerir un desenvolupament addicional del cervell humà o va ser simplement una resposta a la nostra manera cada vegada més civilitzada de viure junts.
+
+        Entre fa 100.000 i 50.000 anys, però, comencem a veure evidència de la civilització humana primerenca, per exemple a través de pintures rupestres; ningú sap quina és la connexió entre això i el llenguatge. Els cervells no es van fer de sobte més grans, però els humans sí que es van tornar més complexos i intel·ligents. Va ser l'ús del llenguatge el que va fer que els seus cervells es desenvolupessin? O els seus cervells més complexos van començar a produir llenguatge?
+
+        <strong>E</strong>
+
+        Hi ha més preguntes quan observem la influència de la genètica en el desenvolupament del cervell i del llenguatge. Hi ha gens que van mutar i ens van donar la capacitat lingüística? Els investigadors han trobat una mutació genètica que va ocórrer entre fa 200.000 i 100.000 anys, que sembla tenir connexió amb la parla i amb la manera com els nostres cervells controlen la boca i la cara. Els micos tenen un gen similar, però no va patir aquesta mutació. És massa aviat per dir quanta influència tenen els gens en el llenguatge, però potser algun dia les respostes es trobaran en el nostre ADN.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. Els experts entenen completament com es va desenvolupar la llengua hindi.`,
       "2. La gramàtica del llenguatge dels dofins segueix les mateixes regles que el llenguatge humà.",
@@ -307,6 +361,23 @@ translations.ca = {
   stateWorld: {
     ...translations.es.stateWorld,
     label: "L'estat del món",
+    description: `
+      Si la teva visió del món ve de mirar les notícies i llegir diaris, se't podria perdonar que et quedessis despert/a a la nit preocupant-te pel futur. Pel que sembla, l'augment de la violència i de les taxes de població significa que els humans ens estem matant els uns als altres en quantitats cada vegada més grans i que estem naixent a ritmes que els recursos del món no poden sostenir. Per empitjorar les coses, tota la riquesa es concentra en un grapat de persones als països més rics del món. Les persones de països amb ingressos baixos viuen en la pobresa mentre Occident s'enriqueix. Depriment, oi?
+
+      Però les estadístiques donen suport a la nostra visió negativa del món o el món està millorant realment?
+
+      Prenem primer la població mundial. Ara ronda els 7.000 milions, d'acord amb les xifres predites per l'ONU el 1958. Per a l'any 2100, els mateixos experts prediuen que rondarà els 11.000 milions. Però sabies que probablement 11.000 milions serà el màxim al qual arribarà aquesta xifra? La taxa d'augment s'alentirà en la segona meitat d'aquest segle gràcies a la caiguda actual de les taxes de natalitat.
+
+      Caiguda de les taxes de natalitat? Sí, és així.
+
+      En els dos darrers segles, les millores en tecnologia i salut van fer que morissin menys infants petits, impulsant un creixement ràpid de la població. Aquestes famílies nombroses van produir encara més fills que van sobreviure fins a l'edat adulta i van tenir els seus propis fills. Però amb la major disponibilitat d'anticonceptius a la dècada de 1960, el nombre mitjà mundial de nadons per dona ha disminuït de sis nadons per dona a només dos.
+
+      El factor més important en la mortalitat infantil és la pobresa. I encara que continua sent cert que només el 20 per cent del món rep aproximadament el 74 per cent dels ingressos mundials, el 60 per cent del món pertany ara a un grup d'ingressos mitjans, i l'11,6 per cent —la menor quantitat de persones de la història— encara viu en condicions de pobresa extrema. Si la majoria de persones del món té diners, l'ajuda internacional podria assolir de manera realista l'objectiu de l'ONU d'erradicar la pobresa per al 2030. A mesura que la pobresa disminueix, l'esperança de vida augmenta, les taxes de natalitat baixen perquè els pares poden esperar que els fills existents sobrevisquin, i la població mundial s'estabilitza.
+
+      Pel que fa a les notícies que ens fan pensar que el món és un lloc cada vegada més violent, també hi ha motius per a un cert optimisme. Entre el final de la Segona Guerra Mundial i 1990, hi va haver 30 guerres que van matar més de 100.000 persones. Avui encara hi ha guerres civils, però els països conviuen en general de manera més pacífica que en el passat. Tanmateix, el terrorisme ha augmentat molt en els darrers anys i, des de la Segona Guerra Mundial, les guerres han matat molts més civils que soldats. Fins i tot per als civils, però, les estadístiques no són del tot dolentes. Encara que les morts tenen nou vegades més probabilitats de ser resultat d'un crim violent que d'un conflicte polític, la taxa mundial d'homicidis va baixar lleugerament, de 8 per cada 100.000 persones l'any 2000 a aproximadament 5,3 el 2015.
+
+      Per descomptat, res d'això significa que el món sigui perfecte, i que t'afectin personalment la guerra i la pobresa sovint depèn de la loteria del lloc on neixes. A més, continuem afrontant problemes enormes creats per nosaltres mateixos, especialment ambientals com l'escalfament global, i la riquesa i els recursos naturals s'han de distribuir de manera més justa. Però no totes les notícies són dolentes, digui el que digui la televisió o els diaris.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. Què ens diu la paraula «apparently» al primer paràgraf sobre l'augment de la violència que veiem a les notícies?`,
       "2. Quina afirmació sobre els nivells de població és correcta?",
@@ -323,6 +394,27 @@ translations.ca = {
   culturalBusiness: {
     ...translations.es.culturalBusiness,
     label: "Comportament cultural en els negocis",
+    description: `
+        Gran part dels negocis actuals es fa a través de fronteres internacionals i, encara que la majoria de la comunitat empresarial mundial pot compartir l'ús de l'anglès com a llengua comuna, els matisos i les expectatives de la comunicació empresarial poden diferir enormement d'una cultura a una altra. La manca de comprensió de les normes i pràctiques culturals dels nostres coneguts de negocis pot donar lloc a judicis injustos, malentesos i errors de comunicació. Aquí hi ha tres àrees bàsiques de diferències en l'etiqueta empresarial arreu del món que et podrien ajudar quan tornis a treballar amb algú d'una cultura diferent.
+
+        <strong>Adreçar-se a algú</strong>
+
+        En tractar aquest tema en un curs de formació, un aprenent alemany i un aprenent britànic van tenir un debat intens sobre si era apropiat que algú amb un doctorat utilitzés el títol corresponent a la seva targeta de visita. L'aprenent britànic sostenia que qualsevol persona que no fos metge i esperés que se l'anomenés «Dr.» era desagradablement presumptuosa i creguda. L'aprenent alemany, però, argumentava que l'esforç i els anys d'educació dedicats a obtenir aquell doctorat haurien de donar ple dret a esperar que se l'anomenés «Dr.».
+
+        Aquesta marcada diferència d'opinió sobre una cosa que es podria considerar menor i, per tant, fàcil de passar per alt, demostra que sovint atribuïm significat fins i tot a les pràctiques més quotidianes. Quan les coses a què estem acostumats es fan de manera diferent, poden provocar en nosaltres les reaccions més fortes. Mentre que molts europeus continentals i llatinoamericans prefereixen que se'ls tracti amb un títol, per exemple Sr. o Sra. i el cognom, en conèixer algú en un context empresarial per primera vegada, els estatunidencs, i cada vegada més els britànics, tendeixen ara a preferir utilitzar el nom de pila. El millor és escoltar i observar com s'adreça a tu l'interlocutor i, si encara tens dubtes, no tenir por de preguntar-li com li agradaria que l'anomenessis.
+
+        <strong>Somriure</strong>
+
+        Una anomenada «somriure de respecte» es considera poc sincera i sovint es veu amb sospita a Rússia. Un proverbi rus famós fins i tot afirma que «riure sense motiu és senyal d'idiotesa». Tanmateix, en països com els Estats Units, Austràlia i la Gran Bretanya, somriure se sol interpretar com a senyal d'obertura, amistat i respecte, i s'utilitza sovint per trencar el gel.
+
+        En una investigació sobre somriures entre cultures, els investigadors van trobar que les persones somrients eren considerades més intel·ligents que les no somrients en països com Alemanya, Suïssa, la Xina i Malàisia. Tanmateix, en països com Rússia, el Japó, Corea del Sud i l'Iran, les imatges de rostres somrients van ser qualificades com a menys intel·ligents que les de rostres no somrients. Mentrestant, en països com l'Índia, l'Argentina i les Maldives, somriure s'associava amb deshonestedat.
+
+        <strong>Contacte visual</strong>
+
+        Una persona estatunidenca o britànica podria mirar el seu client als ulls per mostrar que presta plena atenció al que es diu, però si aquest client és del Japó o de Corea, podria trobar el contacte visual directe incòmode o fins i tot irrespectuós. En parts de Sud-amèrica i Àfrica, el contacte visual prolongat també podria veure's com un desafiament a l'autoritat. A l'Orient Mitjà, el contacte visual entre gèneres es considera inapropiat, encara que el contacte visual dins del mateix gènere podria significar honestedat i veracitat.
+
+        Tenir una major consciència de les possibles diferències en expectatives i comportament ens pot ajudar a evitar casos de mala comunicació, però és vital recordar també que els estereotips culturals poden ser perjudicials per construir bones relacions empresarials. Encara que les cultures nacionals podrien influir en la manera com ens comportem i pensem, també estem molt influïts per la regió d'on venim, les comunitats amb què ens relacionem, la nostra edat i gènere, la nostra cultura corporativa i les nostres experiències individuals del món. El coneixement de les possibles diferències hauria de ser, per tant, una cosa que mantinguem present, i no una cosa que utilitzem per encasellar els individus d'una nació sencera.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. L'aprenent britànic pensava que les persones que volen que se'ls digui «Dr.» han de ser...`,
       "2. Si no saps segur com adreçar-te a algú, hauries de...",
@@ -339,6 +431,27 @@ translations.ca = {
   kilian: {
     ...translations.es.kilian,
     label: "Una biografia de Kilian Jornet",
+    description: `
+      Quan imagines alpinistes escalant l'Everest, probablement penses en equips d'escaladors amb guies xerpes que els condueixen fins al cim, equipats amb màscares d'oxigen, provisions i tendes. I en la majoria dels casos tindries raó, ja que el 97 per cent dels escaladors utilitza oxigen per ascendir al cim de l'Everest, a 8.850 metres sobre el nivell del mar. L'aire prim a gran altitud deixa sense alè la majoria de persones a 3.500 metres, i la gran majoria d'escaladors utilitza oxigen per sobre dels 7.000 metres. Un grup típic d'escalada tindrà entre 8 i 15 persones, amb gairebé el mateix nombre de guies, i passarà setmanes per arribar al cim després d'assolir el Camp Base.
+
+      Però el corredor de muntanya i ultradistància Kilian Jornet Burgada va ascendir la muntanya el maig de 2017 sol, sense màscara d'oxigen ni cordes fixes per escalar.
+
+      Ah, i ho va fer en 26 hores.
+
+      Amb una intoxicació alimentària.
+
+      I després, cinc dies més tard, ho va tornar a fer, aquesta vegada en només 17 hores.
+
+      Nascut el 1987, Kilian ha estat entrenant per a l'Everest tota la vida. I això vol dir realment tota la vida, ja que va créixer a 2.000 metres sobre el nivell del mar als Pirineus, a l'estació d'esquí de Lles de Cerdanya, a Catalunya, al nord-est d'Espanya. Mentre altres infants de la seva edat aprenien a caminar, Kilian anava amb esquís. Amb un any i mig va fer una caminada de cinc hores amb la seva mare, completament pels seus propis mitjans. Va deixar encara més enrere els seus companys quan va pujar la seva primera muntanya i va competir en la seva primera cursa d'esquí de fons als tres anys. Als set anys ja havia escalat un cim de 4.000 metres i, als deu, va fer una travessa de 42 dies pels Pirineus.
+
+      Tenia 13 anys quan diu que va començar a prendre-s'ho «seriosament» i va entrenar amb el Centre de Tecnificació d'Esquí de Muntanya de Catalunya (CTEMC), participant en competicions i treballant amb un entrenador. Als 18, va assumir el seu propi entrenament d'esquí de muntanya i cursa per senders, amb un calendari que només permet un parell de setmanes de descans a l'any. Fa fins a 1.140 hores d'entrenament de resistència a l'any, a més d'entrenament de força i exercicis tècnics, així com entrenament específic la setmana anterior a una cursa. Per al seu ascens i descens rècord del Matterhorn, es va preparar pujant la muntanya deu vegades fins a conèixer-ne cada detall, fins i tot on brillaria el sol a cada part del dia.
+
+      Dormint només set hores per nit, Kilian Jornet sembla gairebé sobrehumà. El seu ritme cardíac en repòs és extremadament baix, 33 batecs per minut, en comparació amb els 60 per minut de l'home mitjà o els 40 per minut d'un atleta. També respira amb més eficiència que la gent mitjana, prenent més oxigen per respiració, i té un temps de recuperació molt més ràpid després de l'exercici, ja que el seu cos descompon ràpidament l'àcid làctic, l'àcid dels músculs que causa dolor després de l'exercici.
+
+      Tot això es deu a la seva infantesa a les muntanyes i a la genètica, però és la seva força mental el que el distingeix. Sovint es planteja reptes per veure quant de temps pot suportar condicions difícils i així comprendre de veritat què poden afrontar el seu cos i la seva ment. Per exemple, va estar a punt de provocar-se una insuficiència renal després de beure només 3,5 litres d'aigua en una cursa de 100 km amb temperatures d'uns 40 °C.
+
+      Caldria un llibre per enumerar totes les curses i premis que ha guanyat i les muntanyes que ha escalat. I fins i tot aquí els assoliments de Kilian superen els d'una persona mitjana, ja que, d'alguna manera, troba temps per registrar la seva carrera al seu blog i ha escrit tres llibres: Run or Die, The Invisible Border i Summits of My Life.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. La majoria d'escaladors a l'Everest...`,
       "2. Kilian Jornet és diferent de la majoria d'escaladors de l'Everest perquè...",
@@ -355,6 +468,23 @@ translations.ca = {
   mars: {
     ...translations.es.mars,
     label: "Vida a Mart",
+    description: `
+      Un nou estudi publicat a la revista Science mostra evidència definitiva de matèria orgànica a la superfície de Mart. Les dades van ser recollides pel rover Curiosity de la NASA, de propulsió nuclear. Confirma troballes anteriors que indicaven que el Planeta Roig havia contingut en un altre temps compostos basats en carboni. Aquests compostos, també anomenats molècules orgàniques, són ingredients essencials per a la vida tal com l'entenen els científics.
+
+      Les molècules orgàniques es van trobar al cràter Gale de Mart, una gran zona que podria haver estat un llac amb aigua fa més de tres mil milions d'anys. El rover va trobar rastres de la molècula en roques extretes de la zona. Les roques també contenen sofre, que els científics especulen que va ajudar a preservar els compostos orgànics fins i tot quan les roques van estar exposades a la dura radiació de la superfície del planeta.
+
+      Els científics s'afanyen a afirmar que la presència d'aquestes molècules orgàniques no és prova suficient de vida antiga a Mart, ja que les molècules podrien haver-se format mitjançant processos no vius. Però continua sent un dels descobriments més sorprenents, que podria conduir a futures revelacions. Especialment si es considera l'altra troballa sorprenent que Curiosity va descobrir fa uns cinc anys.
+
+      El rover analitza periòdicament l'aire al seu voltant, i el 2014 va trobar que l'aire contenia una altra de les molècules orgàniques més bàsiques i un ingredient clau del gas natural: metà. Una de les característiques del metà és que només sobreviu uns quants centenars d'anys. Això significa que alguna cosa, en algun lloc de Mart, n'està reposant el subministrament. Segons la NASA, Mart emet milers de tones de metà cada vegada. El nivell de metà puja i baixa en intervals estacionals durant l'any, gairebé com si el planeta respirés.
+
+      La NASA sospita que el metà prové de les profunditats sota la superfície del planeta. Les variacions de temperatura a la superfície de Mart fan que la molècula flueixi cap amunt en nivells més alts o més baixos. Per exemple, a l'hivern marcià el gas podria quedar atrapat en cristalls gelats subterranis. Aquests cristalls, anomenats clatrats, es fonen a l'estiu i alliberen el gas. Tanmateix, la font del metà continua sent un misteri complet.
+
+      El món de l'astrobiologia considera tots dos estudis com a fites històriques. Segons aquesta informació, Mart no és un planeta mort. Al contrari, és força actiu i pot estar canviant i tornant-se més habitable.
+
+      Per descomptat, això significa que cal més recerca. Els científics diuen que necessiten enviar nous equips a Mart, equips capaços de mesurar l'aire i el sòl amb més precisió. Ja hi ha missions en marxa. La nau ExoMars de l'Agència Espacial Europea aterra el 2020 i podrà perforar el sòl de Mart per analitzar el que hi trobi. A més, la NASA enviarà un altre rover a Mart aquell mateix any per recollir mostres de sòl marcià i retornar-les a la Terra.
+
+      La possibilitat de vida a Mart ha fascinat els humans durant generacions. Ha estat el tema d'innombrables novel·les i pel·lícules de ciència-ficció. Estem sols a l'univers o hi ha hagut altres formes de vida dins del nostre Sistema Solar? Si les missions actuals al Planeta Roig continuen, sembla que podríem descobrir la resposta molt aviat.
+      `,
     questions: [
       `${answerHeader.ca}\n\n1. L'estudi de la revista Science va ser escrit per científics de la NASA.`,
       "2. Aquest no és el primer estudi que suggereix que va existir vida a Mart en el passat.",

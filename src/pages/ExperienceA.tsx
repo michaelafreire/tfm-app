@@ -13,11 +13,9 @@ import ProgressBar from '../components/ProgressBar/ProgressBar';
 import PartPill from '../components/PartPill';
 import { getAdaptiveTheme, getExperienceCondition } from '../experiment/adaptiveConfig';
 import {
+  buildBackupCheckpointSuggestion,
   clampCheckpointCount,
   createScrollReadingStats,
-  estimateExpectedReadingMs,
-  MIN_CHECKPOINT_INTERVAL_MS,
-  MIN_CHECKPOINT_ZONE_MS,
   recommendCheckpointCount,
   type ScrollReadingStats,
 } from '../experiment/checkpointPlan';
@@ -26,12 +24,10 @@ import { stepsByGroup } from './experienceStepsA';
 import type { Step } from './experienceStepsA';
 import { translateExperienceSteps } from './experienceTranslations';
 import { supabase } from "../supabaseClient";
-import { getCoachBubbleMessage } from "../services/coachBubble";
 import { getRandomProbeDelayMs } from "../experiment/probeTiming";
 import { readLocalDraft, useLocalDraft, writeLocalSession } from "../hooks/useLocalDraft";
 import {
   getAfterReadingSuggestion,
-  getDuringReadingSuggestion,
   getInitialCheckpointPlan,
   type CheckpointPlacement,
 } from "../services/adaptiveAI";
@@ -52,10 +48,6 @@ type ReadingTiming = {
 };
 
 type ProbeResponse = "task-focused" | "distracted by thoughts" | "other";
-type CoachBubbleState = {
-  message: string;
-  stepId: string;
-} | null;
 type CheckpointSuggestion = {
   stepId: string;
   direction: "more" | "less";
@@ -63,6 +55,8 @@ type CheckpointSuggestion = {
   actionLabel: string;
 } | null;
 const GAZE_SAMPLE_INTERVAL_MS = 100;
+const CHECKPOINT_DIM_START_MS = 30_000;
+const CHECKPOINT_DIM_FULL_MS = 75_000;
 const gazeStorageKey = (participantCode: string, task: "A" | "B") => `tfm-gaze:${task}:${participantCode}`;
 
 function getAoiSummary(stepId: string, stepData: ReturnType<typeof getGazeData>) {
@@ -119,14 +113,15 @@ function ExperienceA() {
       markerStyle: "diamond" as MarkerStyle,
       aiRecommendedCheckpointCount: undefined as number | undefined,
       aiRecommendationReason: undefined as string | undefined,
+      aiReadingNotesByStep: {} as Record<string, string>,
     }),
     [draftKey],
   );
   const [currentStep, setCurrentStep] = useState<number>(savedDraft.currentStep);
   const selectedTheme = "pastel";
   const theme = getAdaptiveTheme(selectedTheme);
-  const [coachBubble, setCoachBubble] = useState<CoachBubbleState>(null);
   const [checkpointSuggestion, setCheckpointSuggestion] = useState<CheckpointSuggestion>(null);
+  const [aiReadingNotesByStep, setAiReadingNotesByStep] = useState<Record<string, string>>(savedDraft.aiReadingNotesByStep);
   const [answers, setAnswers] = useState<Record<string, string>>(savedDraft.answers);
   const [completedReadingSteps, setCompletedReadingSteps] = useState<Record<string, boolean>>(savedDraft.completedReadingSteps);
   const [readingProgressByStep, setReadingProgressByStep] = useState<Record<string, number>>(savedDraft.readingProgressByStep);
@@ -138,6 +133,8 @@ function ExperienceA() {
   const [isInitialPlanLoading, setIsInitialPlanLoading] = useState(isAdaptive && !savedDraft.aiRecommendedCheckpointCount);
   const [markerStyle, setMarkerStyle] = useState<MarkerStyle>(savedDraft.markerStyle);
   const [shiningCheckpoint, setShiningCheckpoint] = useState<{ stepId: string; checkpointIndex: number } | null>(null);
+  const [checkpointDimByStep, setCheckpointDimByStep] = useState<Record<string, number>>({});
+  const [probeAttentionWarningByStep, setProbeAttentionWarningByStep] = useState<Record<string, boolean>>({});
   const [probeOpen, setProbeOpen] = useState(false);
   const [activeProbeStepId, setActiveProbeStepId] = useState<string | null>(null);
   const readingTimingsRef = useRef<Record<string, ReadingTiming>>({});
@@ -149,9 +146,7 @@ function ExperienceA() {
   const probeTimerStepIdRef = useRef<string | null>(null);
   const probeShownAtRef = useRef<number | null>(null);
   const lastScrollAtRef = useRef<Record<string, number>>({});
-  const stallMessageShownRef = useRef<Record<string, boolean>>({});
   const scheduledProbeStepIdsRef = useRef<Record<string, boolean>>({});
-  const welcomeBubbleShownRef = useRef<string | null>(null);
   const shineTimerRef = useRef<number | null>(null);
   const scrollStatsRef = useRef<Record<string, ScrollReadingStats>>({});
   const initialPlanRequestedRef = useRef(false);
@@ -182,6 +177,7 @@ function ExperienceA() {
       checkpointPlacementsByStep,
       aiRecommendedCheckpointCount,
       aiRecommendationReason,
+      aiReadingNotesByStep,
       markerStyle,
     },
     Boolean(participantCode),
@@ -203,71 +199,36 @@ function ExperienceA() {
     }));
   };
 
-  const showCoachBubble = useCallback(async (
-    event: "welcome" | "steady_progress" | "checkpoint_reached" | "stall_detected" | "probe_off_task",
-    step: { id: string; label: string }
-  ) => {
-    if (!isAdaptive) return;
-
-    const message = await getCoachBubbleMessage({
-      event,
-      themeId: selectedTheme,
-      readingLabel: step.label,
-    });
-
-    setCoachBubble({
-      message,
-      stepId: step.id,
-    });
-  }, [isAdaptive]);
-
-  const suggestCheckpointChange = useCallback(async (
+  const suggestCheckpointChange = useCallback((
     step: Step,
     direction: "more" | "less",
     message: string,
-    scope: "during" | "after" = "during",
   ) => {
     if (!isAdaptive) return;
 
     const currentCount = checkpointCountsByStep[step.id] ?? 3;
     if ((direction === "more" && currentCount >= 5) || (direction === "less" && currentCount <= 1)) {
-      setCoachBubble({ message: "Your checkpoint plan looks about right for this reading.", stepId: step.id });
+      setAiReadingNotesByStep((prev) => ({
+        ...prev,
+        [step.id]: t("adaptive.planLooksRight"),
+      }));
       return;
-    }
-
-    let nextMessage = message;
-    if (scope === "during") {
-      const stats = scrollStatsRef.current[step.id];
-      const aiSuggestion = await getDuringReadingSuggestion({
-        language: routeState.language ?? i18n.language,
-        currentCheckpointCount: currentCount,
-        readingProgressPercent: readingProgressByStep[step.id] ?? 0,
-        scrollDirectionChanges: stats?.directionChanges ?? 0,
-        secondsWithoutProgress: Math.round((Date.now() - (lastScrollAtRef.current[step.id] ?? Date.now())) / 1000),
-        probeResponse: probeRecordsRef.current.find((record) => record.stepId === step.id)?.response,
-      });
-      if (aiSuggestion?.recommendation === "add_checkpoint" || aiSuggestion?.recommendation === "reduce_checkpoints") {
-        nextMessage = aiSuggestion.message;
-        direction = aiSuggestion.recommendation === "add_checkpoint" ? "more" : "less";
-      } else if (aiSuggestion?.recommendation === "keep_same") {
-        setCoachBubble({ message: aiSuggestion.message, stepId: step.id });
-        return;
-      }
     }
 
     setCheckpointSuggestion({
       stepId: step.id,
       direction,
-      message: nextMessage,
-      actionLabel: direction === "more" ? "Add Checkpoint" : "Use Fewer Checkpoints",
+      message,
+      actionLabel: direction === "more" ? t("adaptive.addCheckpoint") : t("adaptive.useFewerCheckpoints"),
     });
-    setCoachBubble({ message: nextMessage, stepId: step.id });
+    setAiReadingNotesByStep((prev) => ({
+      ...prev,
+      [step.id]: message,
+    }));
   }, [
     checkpointCountsByStep,
-    i18n.language,
     isAdaptive,
-    readingProgressByStep,
-    routeState.language,
+    t,
   ]);
 
   const applyCheckpointSuggestion = useCallback(() => {
@@ -284,30 +245,22 @@ function ExperienceA() {
       return { ...prev, [stepId]: Math.min(prev[stepId] ?? 0, nextCount) };
     });
     setCheckpointSuggestion(null);
-    setCoachBubble({
-      stepId,
-      message: direction === "more"
-        ? "Done. I added one checkpoint so the rest is split into smaller sections."
-        : "Done. I reduced the checkpoints so the reading has fewer interruptions.",
-    });
-  }, [checkpointCountsByStep, checkpointSuggestion]);
-
-  const stallDelayMs = 18_000;
+    setAiReadingNotesByStep((prev) => ({
+      ...prev,
+      [stepId]: direction === "more"
+        ? t("adaptive.doneAdded")
+        : t("adaptive.doneReduced"),
+    }));
+  }, [checkpointCountsByStep, checkpointSuggestion, t]);
 
   const resetStallTimer = useCallback((step: Step) => {
     if (!isAdaptive || !isReadingStep(step) || completedReadingSteps[step.id]) return;
 
     if (stallTimerRef.current) {
       window.clearTimeout(stallTimerRef.current);
+      stallTimerRef.current = null;
     }
-
-    stallTimerRef.current = window.setTimeout(() => {
-      if (!stallMessageShownRef.current[step.id]) {
-        stallMessageShownRef.current[step.id] = true;
-        void suggestCheckpointChange(step, "more", "Want smaller sections for the rest of this reading?");
-      }
-    }, stallDelayMs);
-  }, [completedReadingSteps, isAdaptive, stallDelayMs, suggestCheckpointChange]);
+  }, [completedReadingSteps, isAdaptive]);
 
   const steps: Step[] = useMemo(() => (
     localizedRawSteps.map(step => ({
@@ -500,7 +453,6 @@ function ExperienceA() {
       return;
     }
     lastScrollAtRef.current[step.id] = lastScrollAtRef.current[step.id] ?? Date.now();
-    stallMessageShownRef.current[step.id] = stallMessageShownRef.current[step.id] ?? false;
     scrollStatsRef.current[step.id] = scrollStatsRef.current[step.id] ?? createScrollReadingStats(contentRef.current?.scrollTop ?? 0);
 
     resetStallTimer(step);
@@ -549,8 +501,10 @@ function ExperienceA() {
     }
 
     const handleScroll = () => {
-      lastScrollAtRef.current[step.id] = Date.now();
-      stallMessageShownRef.current[step.id] = false;
+      const now = Date.now();
+      const previousScrollAt = lastScrollAtRef.current[step.id] ?? now;
+      lastScrollAtRef.current[step.id] = now;
+      setProbeAttentionWarningByStep((prev) => (prev[step.id] ? { ...prev, [step.id]: false } : prev));
 
       const maxScroll = container.scrollHeight - container.clientHeight;
       const nextProgress = maxScroll <= 0
@@ -577,49 +531,45 @@ function ExperienceA() {
         stats.lastTop = container.scrollTop;
         stats.scrollEvents += 1;
         stats.maxProgress = Math.max(stats.maxProgress, nextProgress);
+        stats.maxTimeWithoutScrollMs = Math.max(stats.maxTimeWithoutScrollMs, now - previousScrollAt);
         scrollStatsRef.current[step.id] = stats;
 
-        if (stats.scrollEvents > 8 && stats.directionChanges >= 4 && !checkpointSuggestion) {
-          void suggestCheckpointChange(step, "more", "Your scrolling looks a bit back-and-forth. Want one extra checkpoint to make the rest easier to pace?");
-        }
-
         const totalCheckpoints = checkpointCountsByStep[step.id] ?? recommendedCheckpointCount;
+        const checkpointDividers = Array.from(
+          container.querySelectorAll<HTMLElement>(`[data-checkpoint-step="${step.id}"]`)
+        );
+        const passLine = container.scrollTop + 8;
+        const bottomReached = maxScroll <= 0 || container.scrollTop >= maxScroll - 8;
+        const dividerCompleted = checkpointDividers.filter((divider, index) => {
+          const isFinalDivider = index === checkpointDividers.length - 1;
+          return divider.offsetTop <= passLine || (isFinalDivider && bottomReached);
+        }).length;
         const checkpointSize = 100 / totalCheckpoints;
-        const nextCompleted = Math.min(totalCheckpoints, Math.floor(nextProgress / checkpointSize));
+        const fallbackCompleted = Math.min(totalCheckpoints, Math.floor(nextProgress / checkpointSize));
+        const nextCompleted = checkpointDividers.length > 0 ? dividerCompleted : fallbackCompleted;
         const previousCompleted = completedCheckpointsByStep[step.id] ?? 0;
 
-        if (nextCompleted > previousCompleted) {
-          const candidateCheckpointIndex = previousCompleted;
-          const now = Date.now();
-          stats.checkpointZoneEnteredAtByIndex[candidateCheckpointIndex] =
-            stats.checkpointZoneEnteredAtByIndex[candidateCheckpointIndex] ?? now;
-          const timeInCheckpointZone = now - stats.checkpointZoneEnteredAtByIndex[candidateCheckpointIndex];
-          const timeSinceLastCheckpoint = now - stats.lastCheckpointCompletedAt;
-          const canCompleteCheckpoint =
-            timeInCheckpointZone >= MIN_CHECKPOINT_ZONE_MS &&
-            timeSinceLastCheckpoint >= MIN_CHECKPOINT_INTERVAL_MS;
+        if (nextCompleted !== previousCompleted) {
+          setCompletedCheckpointsByStep((prev) => ({
+            ...prev,
+            [step.id]: nextCompleted,
+          }));
 
-          if (canCompleteCheckpoint) {
-            const gatedCompleted = previousCompleted + 1;
-            stats.lastCheckpointCompletedAt = now;
-            scrollStatsRef.current[step.id] = stats;
-            setCompletedCheckpointsByStep((prev) => ({
-              ...prev,
-              [step.id]: gatedCompleted,
-            }));
+          if (nextCompleted > previousCompleted) {
             setShiningCheckpoint({
               stepId: step.id,
-              checkpointIndex: gatedCompleted - 1,
+              checkpointIndex: nextCompleted - 1,
             });
             if (shineTimerRef.current) {
               window.clearTimeout(shineTimerRef.current);
             }
             shineTimerRef.current = window.setTimeout(() => {
               setShiningCheckpoint((current) =>
-                current?.stepId === step.id && current.checkpointIndex === gatedCompleted - 1 ? null : current
+                current?.stepId === step.id && current.checkpointIndex === nextCompleted - 1 ? null : current
               );
             }, 700);
-            void showCoachBubble("steady_progress", step);
+          } else {
+            setShiningCheckpoint((current) => (current?.stepId === step.id ? null : current));
           }
         }
       }
@@ -633,7 +583,6 @@ function ExperienceA() {
     };
   }, [
     checkpointCountsByStep,
-    checkpointSuggestion,
     completedCheckpointsByStep,
     currentStep,
     currentStepCompleted,
@@ -642,27 +591,8 @@ function ExperienceA() {
     isAdaptive,
     recommendedCheckpointCount,
     resetStallTimer,
-    showCoachBubble,
     steps,
-    suggestCheckpointChange,
   ]);
-
-  useEffect(() => {
-    if (isAdaptive && currentStep === 0) {
-      const firstStep = steps[0];
-      const welcomeKey = `${selectedTheme}:${firstStep?.id ?? "intro"}`;
-      if (firstStep && welcomeBubbleShownRef.current !== welcomeKey) {
-        welcomeBubbleShownRef.current = welcomeKey;
-        const timerId = window.setTimeout(() => {
-          void showCoachBubble("welcome", firstStep);
-        }, 0);
-
-        return () => {
-          window.clearTimeout(timerId);
-        };
-      }
-    }
-  }, [currentStep, isAdaptive, showCoachBubble, steps]);
 
   const handleProbeResponse = (response: ProbeResponse) => {
     const step = steps[currentStep];
@@ -680,11 +610,36 @@ function ExperienceA() {
         existingRecord.response = response;
       }
 
-      if (response !== "task-focused" && isAdaptive) {
-        void suggestCheckpointChange(step, "more", "It looks like focus may have drifted. Want one more checkpoint for the rest of this reading?");
+      if (response !== "task-focused") {
+        setProbeAttentionWarningByStep((prev) => ({ ...prev, [step.id]: true }));
       }
+
     }
   };
+
+  useEffect(() => {
+    if (!isAdaptive || !currentStepId || !currentStepIsReading || currentStepCompleted) return;
+
+    const updateDim = () => {
+      const lastScrollAt = lastScrollAtRef.current[currentStepId] ?? Date.now();
+      const noScrollMs = Date.now() - lastScrollAt;
+      const noScrollDim = Math.max(
+        0,
+        Math.min(1, (noScrollMs - CHECKPOINT_DIM_START_MS) / (CHECKPOINT_DIM_FULL_MS - CHECKPOINT_DIM_START_MS))
+      );
+      const probeDim = probeAttentionWarningByStep[currentStepId] ? 0.85 : 0;
+      const nextDim = Math.max(noScrollDim, probeDim);
+
+      setCheckpointDimByStep((prev) => {
+        if (Math.abs((prev[currentStepId] ?? 0) - nextDim) < 0.03) return prev;
+        return { ...prev, [currentStepId]: nextDim };
+      });
+    };
+
+    updateDim();
+    const intervalId = window.setInterval(updateDim, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [currentStepCompleted, currentStepId, currentStepIsReading, isAdaptive, probeAttentionWarningByStep]);
 
   const handleCompleteReading = async (stepId: string) => {
     const now = Date.now();
@@ -715,63 +670,63 @@ function ExperienceA() {
 
     const completedStep = steps.find((step) => step.id === stepId);
     if (completedStep && isAdaptive) {
-      const timing = readingTimingsRef.current[stepId];
-      const readingDuration = timing?.startedAt && timing.endedAt ? timing.endedAt - timing.startedAt : null;
-      const expectedDuration = estimateExpectedReadingMs(completedStep);
       const stats = scrollStatsRef.current[stepId];
-      const probeResponse = probeRecordsRef.current.find((record) => record.stepId === stepId)?.response;
+      const probeRecord = probeRecordsRef.current.find((record) => record.stepId === stepId);
+      const probeResponse = probeRecord?.response;
+      const probeResponseTimeMs =
+        probeRecord?.shownAt && probeRecord?.answeredAt ? probeRecord.answeredAt - probeRecord.shownAt : null;
+      const longestNoScrollMs = stats
+        ? Math.max(stats.maxTimeWithoutScrollMs, Date.now() - (lastScrollAtRef.current[stepId] ?? Date.now()))
+        : null;
       const nextReadingStep = readingSteps.find((step) => Number(step.id) > Number(stepId));
       const aiSuggestion = await getAfterReadingSuggestion({
         language: routeState.language ?? i18n.language,
         currentCheckpointCount: checkpointCountsByStep[stepId] ?? recommendedCheckpointCount,
-        readingDurationMs: readingDuration,
-        expectedDurationMs: expectedDuration,
         scrollDirectionChanges: stats?.directionChanges ?? 0,
         probeResponse,
+        probeResponseTimeMs,
+        longestNoScrollMs,
       });
 
       if (aiSuggestion && nextReadingStep) {
         if (aiSuggestion.recommendation === "add_checkpoint") {
-          void suggestCheckpointChange(nextReadingStep, "more", aiSuggestion.message, "after");
+          suggestCheckpointChange(nextReadingStep, "more", aiSuggestion.message);
         } else if (aiSuggestion.recommendation === "reduce_checkpoints") {
-          void suggestCheckpointChange(nextReadingStep, "less", aiSuggestion.message, "after");
+          suggestCheckpointChange(nextReadingStep, "less", aiSuggestion.message);
         } else {
-          setCoachBubble({ stepId, message: aiSuggestion.message });
+          setAiReadingNotesByStep((prev) => ({
+            ...prev,
+            [nextReadingStep.id]: aiSuggestion.message,
+          }));
         }
         pauseTracking();
         setActiveSectionId(null);
         return;
       }
 
-      if (probeResponse && probeResponse !== "task-focused") {
-        if (nextReadingStep) {
-          void suggestCheckpointChange(nextReadingStep, "more", "For the next reading, a few more checkpoints may help keep attention anchored. Want to add one?", "after");
-        } else {
-          setCoachBubble({ stepId, message: "Thanks. I have recorded how this checkpoint plan worked for the reading." });
+      if (nextReadingStep) {
+        const nextReadingIndex = readingSteps.findIndex((step) => step.id === nextReadingStep.id);
+        if (nextReadingIndex === 1 || nextReadingIndex === 2) {
+          const backupSuggestion = buildBackupCheckpointSuggestion({
+            currentCheckpointCount: checkpointCountsByStep[stepId] ?? recommendedCheckpointCount,
+            scrollDirectionChanges: stats?.directionChanges ?? 0,
+            probeResponse,
+            probeResponseTimeMs,
+            longestNoScrollMs,
+            language: routeState.language ?? i18n.language,
+          });
+
+          if (backupSuggestion.direction === "more") {
+            suggestCheckpointChange(nextReadingStep, "more", backupSuggestion.message);
+          } else if (backupSuggestion.direction === "less") {
+            suggestCheckpointChange(nextReadingStep, "less", backupSuggestion.message);
+          } else {
+            setAiReadingNotesByStep((prev) => ({
+              ...prev,
+              [nextReadingStep.id]: backupSuggestion.message,
+            }));
+          }
         }
-      } else if (stats && stats.directionChanges >= 4) {
-        if (nextReadingStep) {
-          void suggestCheckpointChange(nextReadingStep, "more", "You moved back and forth quite a bit. Want one more checkpoint next time?", "after");
-        } else {
-          setCoachBubble({ stepId, message: "Thanks. I have recorded how this checkpoint plan worked for the reading." });
-        }
-      } else if (readingDuration && readingDuration > expectedDuration * 1.45) {
-        if (nextReadingStep) {
-          void suggestCheckpointChange(nextReadingStep, "more", "This reading took longer than expected. Want one more checkpoint next time?", "after");
-        } else {
-          setCoachBubble({ stepId, message: "Thanks. I have recorded how this checkpoint plan worked for the reading." });
-        }
-      } else if (readingDuration && readingDuration < expectedDuration * 0.55 && (checkpointCountsByStep[stepId] ?? recommendedCheckpointCount) > 1) {
-        if (nextReadingStep) {
-          void suggestCheckpointChange(nextReadingStep, "less", "You moved through this reading smoothly. Want fewer checkpoints next time?", "after");
-        } else {
-          setCoachBubble({ stepId, message: "This checkpoint plan seems to be working well for your reading pace." });
-        }
-      } else {
-        setCoachBubble({
-          stepId,
-          message: "This checkpoint plan seems to be working well for your reading pace.",
-        });
       }
     }
 
@@ -1000,16 +955,6 @@ function ExperienceA() {
           <Typography variant="body1" sx={{ fontWeight: 'bold', pt: 1 }}>
             {t("experienceIntro.titleA")}
           </Typography>
-          {isAdaptive ? (
-            <Box sx={{ width: "100%", maxWidth: 420, ml: "auto" }}>
-              <CoachBubble
-                message={coachBubble?.message ?? "Choose your reading strategy and I'll pace the journey with you."}
-                theme={theme}
-                actionLabel={checkpointSuggestion?.actionLabel}
-                onAction={checkpointSuggestion ? applyCheckpointSuggestion : undefined}
-              />
-            </Box>
-          ) : null}
         </Box>
         {isAdaptive && currentStep > 0 ? (
           <>
@@ -1020,6 +965,7 @@ function ExperienceA() {
               checkpointCountsByStep={checkpointCountsByStep}
               completedCheckpointsByStep={completedCheckpointsByStep}
               markerStyle={markerStyle}
+              markerDimByStep={checkpointDimByStep}
               shiningCheckpoint={shiningCheckpoint}
             />
           </>
@@ -1072,6 +1018,20 @@ function ExperienceA() {
             markerStyle={markerStyle}
             adaptiveTheme={isAdaptive ? theme : undefined}
             checkpointPlacementsByStep={isAdaptive ? checkpointPlacementsByStep : undefined}
+            readingIntroByStep={
+              isAdaptive && currentStepIsReading && !currentStepCompleted && currentStepId && aiReadingNotesByStep[currentStepId]
+                ? {
+                    [currentStepId]: (
+                      <CoachBubble
+                        message={aiReadingNotesByStep[currentStepId]}
+                        theme={theme}
+                        actionLabel={checkpointSuggestion?.stepId === currentStepId ? checkpointSuggestion.actionLabel : undefined}
+                        onAction={checkpointSuggestion?.stepId === currentStepId ? applyCheckpointSuggestion : undefined}
+                      />
+                    ),
+                  }
+                : undefined
+            }
             shiningCheckpoint={shiningCheckpoint}
           />
           {isAdaptive && currentStep === 0 ? (
