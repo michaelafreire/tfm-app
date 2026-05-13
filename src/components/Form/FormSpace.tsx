@@ -4,6 +4,13 @@ import Stack from '@mui/material/Stack';
 import React from "react";
 import ColorButton from "../ColorButton";
 import { useTranslation } from "react-i18next";
+import { alpha } from "@mui/material/styles";
+import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
+import type { AdaptiveTheme } from "../../experiment/adaptiveConfig";
+import { getMarkerColor, type MarkerStyle } from "../Adaptive/AdaptiveProgressBar";
+import type { CheckpointPlacement } from "../../services/adaptiveAI";
 
 type Choice = string | { value: string; label: string };
 
@@ -44,6 +51,15 @@ type FormSpaceProps = {
   currentStep: number;
   completedReadingSteps?: Record<string, boolean>;
   onCompleteReadingStep?: (stepId: string) => void;
+  checkpointCountsByStep?: Record<string, number>;
+  completedCheckpointsByStep?: Record<string, number>;
+  markerStyle?: MarkerStyle;
+  adaptiveTheme?: AdaptiveTheme;
+  checkpointPlacementsByStep?: Record<string, CheckpointPlacement[]>;
+  shiningCheckpoint?: {
+    stepId: string;
+    checkpointIndex: number;
+  } | null;
 };
 
 function renderInlineStrong(text: string) {
@@ -62,7 +78,85 @@ function renderInlineStrong(text: string) {
   });
 }
 
-function renderDescription(description: string) {
+function MarkerIcon({ style, size = 20 }: { style: MarkerStyle; size?: number }) {
+  const sx = { fontSize: size, display: "block" };
+  if (style === "heart") return <FavoriteRoundedIcon sx={sx} />;
+  if (style === "star") return <StarRoundedIcon sx={sx} />;
+  return <DiamondRoundedIcon sx={sx} />;
+}
+
+function CheckpointDivider({
+  checkpointIndex,
+  isReached,
+  isShining,
+  markerStyle,
+  theme,
+}: {
+  checkpointIndex: number;
+  isReached: boolean;
+  isShining: boolean;
+  markerStyle: MarkerStyle;
+  theme: AdaptiveTheme;
+}) {
+  const markerColor = getMarkerColor(markerStyle, theme);
+
+  return (
+    <Box
+      sx={{
+        my: 3,
+        display: "grid",
+        gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center",
+        gap: 1.5,
+        color: isReached ? markerColor : alpha(markerColor, 0.5),
+        animation: isShining ? "inlineCheckpointShine 0.9s ease-out" : "none",
+        "@keyframes inlineCheckpointShine": {
+          "0%": { transform: "scale(0.98)", filter: "drop-shadow(0 0 0 rgba(255,255,255,0))" },
+          "35%": { transform: "scale(1.02)", filter: `drop-shadow(0 0 16px ${alpha(markerColor, 0.75)})` },
+          "100%": { transform: "scale(1)", filter: "drop-shadow(0 0 0 rgba(255,255,255,0))" },
+        },
+      }}
+    >
+      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16) }} />
+      <Box
+        sx={{
+          px: 2,
+          py: 0.65,
+          borderRadius: 999,
+          bgcolor: alpha(markerColor, isReached ? 0.12 : 0.06),
+          border: `1px solid ${alpha(markerColor, isReached ? 0.24 : 0.13)}`,
+          display: "flex",
+          alignItems: "center",
+          gap: 0.75,
+          fontWeight: 700,
+          fontSize: "0.78rem",
+          color: isReached ? markerColor : "text.secondary",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <MarkerIcon style={markerStyle} size={18} />
+        Checkpoint {checkpointIndex + 1}: key idea complete
+      </Box>
+      <Box sx={{ height: 2, bgcolor: alpha(markerColor, isReached ? 0.34 : 0.16) }} />
+    </Box>
+  );
+}
+
+function renderDescription(
+  description: string,
+  checkpointOptions?: {
+    stepId: string;
+    checkpointCount: number;
+    completedCheckpointCount: number;
+    placements?: CheckpointPlacement[];
+    markerStyle: MarkerStyle;
+    theme: AdaptiveTheme;
+    shiningCheckpoint?: {
+      stepId: string;
+      checkpointIndex: number;
+    } | null;
+  },
+) {
   const lines = description.split("\n");
   const nodes: React.ReactNode[] = [];
 
@@ -117,6 +211,44 @@ function renderDescription(description: string) {
     );
   }
 
+  if (checkpointOptions && checkpointOptions.checkpointCount > 1 && nodes.length > 1) {
+    const dividerCount = checkpointOptions.checkpointCount - 1;
+    const placements = checkpointOptions.placements?.slice(0, dividerCount) ?? [];
+    const insertAfterIndexes = new Set(
+      placements.length > 0
+        ? placements.map((placement) =>
+            Math.max(0, Math.min(nodes.length - 2, placement.afterParagraph - 1))
+          )
+        : Array.from({ length: dividerCount }, (_, index) =>
+            Math.max(0, Math.min(nodes.length - 2, Math.round(((index + 1) * nodes.length) / checkpointOptions.checkpointCount) - 1))
+          )
+    );
+    const checkpointNodes: React.ReactNode[] = [];
+    let checkpointIndex = 0;
+
+    nodes.forEach((node, nodeIndex) => {
+      checkpointNodes.push(node);
+      if (insertAfterIndexes.has(nodeIndex) && checkpointIndex < dividerCount) {
+        checkpointNodes.push(
+          <CheckpointDivider
+            key={`checkpoint-divider-${checkpointIndex}`}
+            checkpointIndex={checkpointIndex}
+            isReached={checkpointOptions.completedCheckpointCount > checkpointIndex}
+            isShining={
+              checkpointOptions.shiningCheckpoint?.stepId === checkpointOptions.stepId &&
+              checkpointOptions.shiningCheckpoint.checkpointIndex === checkpointIndex
+            }
+            markerStyle={checkpointOptions.markerStyle}
+            theme={checkpointOptions.theme}
+          />
+        );
+        checkpointIndex += 1;
+      }
+    });
+
+    return checkpointNodes;
+  }
+
   return nodes;
 }
 
@@ -129,6 +261,12 @@ function FormSpace({
   currentStep,
   completedReadingSteps = {},
   onCompleteReadingStep = () => {},
+  checkpointCountsByStep = {},
+  completedCheckpointsByStep = {},
+  markerStyle = "diamond",
+  adaptiveTheme,
+  checkpointPlacementsByStep = {},
+  shiningCheckpoint = null,
 }: FormSpaceProps) {
   const { t } = useTranslation();
 
@@ -156,7 +294,20 @@ function FormSpace({
                   marginLeft: 2,
                 }}
               >
-                {renderDescription(step.description)}
+                {renderDescription(
+                  step.description,
+                  readingStep && adaptiveTheme
+                    ? {
+                        stepId: step.id,
+                        checkpointCount: checkpointCountsByStep[step.id] ?? 0,
+                        completedCheckpointCount: completedCheckpointsByStep[step.id] ?? 0,
+                        placements: checkpointPlacementsByStep[step.id],
+                        markerStyle,
+                        theme: adaptiveTheme,
+                        shiningCheckpoint,
+                      }
+                    : undefined,
+                )}
               </Box>
             )}
             {readingStep && !readingCompleted && (

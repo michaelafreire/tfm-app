@@ -4,9 +4,11 @@ import type { AdaptiveTheme } from "../../experiment/adaptiveConfig";
 type CoachBubbleProps = {
   message: string;
   theme: AdaptiveTheme;
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
-function CoachBubble({ message, theme }: CoachBubbleProps) {
+function CoachBubble({ message, theme, actionLabel, onAction }: CoachBubbleProps) {
   return (
     <Box
       sx={{
@@ -38,9 +40,38 @@ function CoachBubble({ message, theme }: CoachBubbleProps) {
       >
         AI
       </Box>
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        {message}
-      </Typography>
+      <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          {message}
+        </Typography>
+        {actionLabel && onAction ? (
+          <Box
+            component="button"
+            type="button"
+            onClick={onAction}
+            sx={{
+              mt: 1,
+              border: "none",
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.85,
+              bgcolor: theme.accent,
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: "0.85rem",
+              cursor: "pointer",
+              boxShadow: "0 6px 16px rgba(0,0,0,0.14)",
+              minWidth: 150,
+              textAlign: "center",
+              "&:hover": {
+                filter: "brightness(0.96)",
+              },
+            }}
+          >
+            {actionLabel}
+          </Box>
+        ) : null}
+      </Box>
     </Box>
   );
 }
