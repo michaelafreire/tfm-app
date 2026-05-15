@@ -41,6 +41,7 @@ function Calibration() {
   const participantCode = routeState.participantCode;
   const groupNumber = routeState.groupNumber;
   const nextPath = routeState.nextPath === "/experienceb" ? "/experienceb" : "/experiencea";
+  const calibrationExperience = routeState.calibrationExperience ?? (nextPath === "/experienceb" ? "B" : "A");
   const nextExperienceName = nextPath === "/experienceb" ? t("experienceIntro.titleB") : t("experienceIntro.titleA");
 
   const [activePointIndex, setActivePointIndex] = useState(0);
@@ -77,7 +78,7 @@ function Calibration() {
             webgazer.showVideoPreview(true);
             webgazer.showFaceOverlay(true);
             webgazer.showFaceFeedbackBox(true);
-            webgazer.showPredictionPoints(true);
+            webgazer.showPredictionPoints(false);
             const videoContainer = document.getElementById("webgazerVideoContainer");
             if (videoContainer) {
               videoContainer.style.top = "16px";
@@ -183,6 +184,9 @@ function Calibration() {
         asrsPartAScore: routeState.asrsPartAScore,
         asrsClassification: routeState.asrsClassification,
         ticksPerReading: routeState.ticksPerReading,
+        calibrationExperience,
+        calibrationAccuracyPercent: accuracy?.accuracyPercent,
+        calibrationAverageErrorPx: accuracy?.averageErrorPx,
       },
     });
   };
@@ -277,10 +281,12 @@ function Calibration() {
       Math.min(100, Math.round((1 - averageErrorPx / maxDistance) * 100))
     );
 
-    setAccuracy({
+    const nextAccuracy = {
       accuracyPercent,
       averageErrorPx: Math.round(averageErrorPx),
-    });
+    };
+
+    setAccuracy(nextAccuracy);
     setCalibrationOffset({ x: xOffset, y: yOffset });
   };
 
@@ -288,7 +294,9 @@ function Calibration() {
   const clicksOnActivePoint =
     isComplete ? CLICKS_PER_POINT : (clickCount % CLICKS_PER_POINT);
   const topMessage = accuracy
-    ? t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })
+    ? `${t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })}${
+      accuracy.accuracyPercent < 85 ? ` ${t("calibration.recalibrateSuggestion")}` : ""
+    }`
     : isScoring
       ? t("calibration.keepEyesFixed")
       : isPreparing

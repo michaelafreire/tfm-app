@@ -42,7 +42,7 @@ const resources = {
       },
       attentionProbe: {
         title: "Attention Check",
-        prompt: "Just before this, were you:",
+        prompt: "Just before this message appeared, were you:",
         options: {
           "task-focused": "task-focused",
           "distracted by thoughts": "distracted by thoughts",
@@ -51,11 +51,23 @@ const resources = {
       },
       adaptive: {
         readingLabel: "Reading {{number}}",
+        now: "Now",
         completedOfTotal: "{{completed}} of {{total}}",
         preparingPlan: "Preparing your checkpoint plan.",
         planReady: "Your checkpoint plan is ready.",
         reviewingPlan: "The AI is reviewing the reading structure and ASRS profile.",
         planReadySubtitle: "You can keep the recommended plan or make one small change before starting.",
+        chooseCompanion: "Before you begin, choose your reading companion.",
+        companionSubtitle: "Choose the companion you would like to have beside you while you read.",
+        previewFocusPath: "Preview:",
+        companionReady: "I recommend {{count}} milestones. You can edit this before reading.",
+        initialCompanionMessage: "I recommend {{count}} milestones. You can edit this before reading.",
+        companions: {
+          calm: "Calm",
+          steady: "Steady",
+          bright: "Bright",
+          quiet: "Quiet",
+        },
         aiLabel: "AI",
         aiPreparing: "I am preparing a checkpoint recommendation.",
         aiRecommendation: "For these readings, I recommend {{count}} checkpoints at natural topic breaks.",
@@ -82,8 +94,10 @@ const resources = {
         planLooksRight: "Your checkpoint plan looks about right for this reading.",
         addCheckpoint: "Add Checkpoint",
         useFewerCheckpoints: "Use Fewer Checkpoints",
+        keepCheckpointCount: "Keep checkpoint count",
         doneAdded: "Done. I added one checkpoint so the rest is split into smaller sections.",
         doneReduced: "Done. I reduced the checkpoints so the reading has fewer interruptions.",
+        doneKept: "Done. I kept the checkpoint count the same.",
       },
       intro: {
         title: "AI for Reading Comprehension",
@@ -109,7 +123,7 @@ const resources = {
       instructions: {
         title: "Before You Begin",
         intro:
-          "Please read these instructions carefully before starting the experiment. The experiment has four parts: a pre and post questionnaire, and two reading experiences with a 5-minute break between them.",
+          "Please read these instructions carefully before starting the experiment.",
         whatWillYouDo: "What will you do?",
         fourParts: "The experiment has four parts.",
         preTitle: "Pre-experiment questionnaire",
@@ -124,8 +138,8 @@ const resources = {
         experienceQuestionnaire: "Experience questionnaire",
         experienceADescription:
           "This experience involves eye tracking, so you will begin with a calibration using your cámara web. Then, you will complete 3 reading rounds. Each round has one passage and 4 comprehension questions. Afterwards, you will complete a brief questionnaire about your experience.",
-        breakTitle: "5-minute break",
-        breakLabel: "Break",
+        breakTitle: "5-minute break (optional)",
+        breakLabel: "Break ",
         breakTimer: "Break timer",
         breakBody:
           "Time for a 5-minute break. Feel free to play PONG on the screen, go to the bathroom, have some water or just take some time to yourself. If you do not want a break, just click \"Skip break\".",
@@ -158,6 +172,7 @@ const resources = {
         scoreNotReady: "Calibration finished, but the validation score could not be computed because the tracker is not ready yet.",
         noPredictions: "Calibration completed, but no stable gaze predictions were available for scoring. You can recalibrate and try again.",
         accuracyMessage: "Your accuracy is {{accuracy}}%. Continue to {{experience}}, or recalibrate if you want a better result.",
+        recalibrateSuggestion: "If your accuracy is below 85%, we recommend recalibrating before continuing.",
         keepEyesFixed: "Keep your eyes fixed on each purple dot until the measurement finishes.",
         preparing: "Preparing webcam and tracker...",
         averageError: "Average validation error: about {{pixels}}px.",
@@ -243,17 +258,17 @@ By continuing, you confirm that you have read and understood the information abo
       },
       post: {
         experience: {
-          label: "Cognitive Test",
-          description: "Please answer the following questions about your experience during the experiment.",
-          stress: "Stress levels?",
-          feelings: "How do you feel?",
-        },
-        next: {
-          label: "Next Steps",
-          description: "Thank you for participating! Please click \"Next\" to complete the experiment and receive further instructions.",
-          keepInTouch: "Should we keep in touch?",
+          label: "Post Questionnaire",
+          description: "Please answer the following questions.",
+          difference: "How did the two reading experiences differ for you, if at all?",
+          feedback: "Did either reading experience affect your concentration, motivation, or reading pace? Please explain.",
         },
       },
+      final:{
+        "thanks-i": "🎉 Study Complete 🎉",
+        "thanks-ii": "Thank you so much for your participation!",
+        "instruction": "A file has been downloaded automatically to your device. Please send it to the researcher: michaela.freire01@estudiant.upf.edu",
+      }
     },
   },
   es: {
@@ -288,7 +303,7 @@ By continuing, you confirm that you have read and understood the information abo
       },
       attentionProbe: {
         title: "Comprobación de atención",
-        prompt: "Justo antes de esto, ¿estabas:",
+        prompt: "Justo antes de que aparezca este mensaje, estaba:",
         options: {
           "task-focused": "concentrado/a en la tarea",
           "distracted by thoughts": "distraído/a por pensamientos",
@@ -297,11 +312,23 @@ By continuing, you confirm that you have read and understood the information abo
       },
       adaptive: {
         readingLabel: "Lectura {{number}}",
+        now: "Ahora",
         completedOfTotal: "{{completed}} de {{total}}",
         preparingPlan: "Preparando tu plan de checkpoints.",
         planReady: "Tu plan de checkpoints está listo.",
         reviewingPlan: "La IA está revisando la estructura de la lectura y el perfil ASRS.",
         planReadySubtitle: "Puedes mantener el plan recomendado o hacer un pequeño cambio antes de empezar.",
+        chooseCompanion: "Antes de empezar, elige tu compañero de lectura",
+        companionSubtitle: "Elige el compañero que quieres tener a tu lado mientras lees.",
+        previewFocusPath: "Vista previa:",
+        companionReady: "Recomiendo {{count}} hitos. Puedes editarlo antes de leer.",
+        initialCompanionMessage: "Recomiendo {{count}} hitos. Puedes editarlo antes de leer.",
+        companions: {
+          calm: "Calmado",
+          steady: "Constante",
+          bright: "Luminoso",
+          quiet: "Tranquilo",
+        },
         aiLabel: "IA",
         aiPreparing: "Estoy preparando una recomendación de checkpoints.",
         aiRecommendation: "Para estas lecturas, recomiendo {{count}} checkpoints en pausas temáticas naturales.",
@@ -328,8 +355,10 @@ By continuing, you confirm that you have read and understood the information abo
         planLooksRight: "Tu plan de checkpoints parece adecuado para esta lectura.",
         addCheckpoint: "Añadir checkpoint",
         useFewerCheckpoints: "Usar menos checkpoints",
+        keepCheckpointCount: "Mantener número de checkpoints",
         doneAdded: "He añadido un checkpoint para dividir el resto en secciones más pequeñas.",
         doneReduced: "He reducido los checkpoints para que la lectura tenga menos interrupciones.",
+        doneKept: "He mantenido el mismo número de checkpoints.",
       },
       intro: {
         title: "IA para la comprensión lectora",
@@ -355,7 +384,7 @@ By continuing, you confirm that you have read and understood the information abo
       instructions: {
         title: "Antes de empezar",
         intro:
-          "Lee estas instrucciones con atención antes de empezar el experimento. El experimento tiene cuatro partes: un cuestionario pre y post, y dos experiencias de lectura con un descanso de 5 minutos entre ellas.",
+          "Lee estas instrucciones con atención antes de empezar el experimento.",
         whatWillYouDo: "¿Qué harás?",
         fourParts: "El experimento tiene cuatro partes.",
         preTitle: "Cuestionario pre-experimento",
@@ -370,7 +399,7 @@ By continuing, you confirm that you have read and understood the information abo
         experienceQuestionnaire: "Cuestionario de experiencia",
         experienceADescription:
           "Esta experiencia incluye eye tracking, así que empezarás con una calibración usando tu cámara web. Después, completarás 3 rondas de lectura. Cada ronda tiene un texto y 4 preguntas de comprensión. Luego, completarás un breve cuestionario sobre tu experiencia.",
-        breakTitle: "Descanso de 5 minutos",
+        breakTitle: "Descanso de 5 minutos (opcional)",
         breakLabel: "Descanso",
         breakTimer: "Temporizador",
         breakBody:
@@ -404,6 +433,7 @@ By continuing, you confirm that you have read and understood the information abo
         scoreNotReady: "La calibración terminó, pero no se pudo calcular la puntuación de validación porque el sistema aún no está listo.",
         noPredictions: "La calibración se completó, pero no hubo predicciones de mirada estables para calcular la puntuación. Puedes recalibrar e intentarlo de nuevo.",
         accuracyMessage: "Tu precisión es del {{accuracy}} %. Continúa a {{experience}} o recalibra si quieres obtener un mejor resultado.",
+        recalibrateSuggestion: "Si tu precisión está por debajo del 85 %, recomendamos recalibrar antes de continuar.",
         keepEyesFixed: "Mantén la mirada fija en cada punto morado hasta que termine la medición.",
         preparing: "Preparando webcam y seguimiento ocular...",
         averageError: "Error medio de validación: aproximadamente {{pixels}} px.",
@@ -489,17 +519,17 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
       },
       post: {
         experience: {
-          label: "Prueba cognitiva",
-          description: "Por favor, responde las siguientes preguntas sobre tu experiencia durante el experimento.",
-          stress: "¿Nivel de estrés?",
-          feelings: "¿Cómo te sientes?",
-        },
-        next: {
-          label: "Siguientes pasos",
-          description: "¡Gracias por participar! Haz clic en \"Siguiente\" para completar el experimento y recibir más instrucciones.",
-          keepInTouch: "¿Deberíamos mantener el contacto?",
+          label: "Cuestionario final",
+          description: "Por favor, responde a las siguientes preguntas.",
+          difference: "¿En qué se diferenciaron para ti las dos experiencias de lectura, si es que notaste alguna diferencia?",
+          feedback: "¿Alguna de las experiencias de lectura afectó tu concentración, motivación o ritmo de lectura? Por favor, explícalo.",
         },
       },
+      final:{
+        "thanks-i": "🎉 Estudio completado 🎉",
+        "thanks-ii": "¡Muchas gracias por tu participación!",
+        "instruction": "Un archivo se ha descargado automáticamente en tu dispositivo. Por favor, envíalo a la investigadora: michaela.freire01@estudiant.upf.edu",
+      }
     },
   },
   ca: {
@@ -534,7 +564,7 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
       },
       attentionProbe: {
         title: "Comprovació d'atenció",
-        prompt: "Just abans d'això, estaves:",
+        prompt: "Just abans que aparegui aquest missatge, estaves:",
         options: {
           "task-focused": "concentrat/ada en la tasca",
           "distracted by thoughts": "distret/a per pensaments",
@@ -543,11 +573,24 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
       },
       adaptive: {
         readingLabel: "Lectura {{number}}",
+        now: "Ara",
         completedOfTotal: "{{completed}} de {{total}}",
         preparingPlan: "Preparant el teu pla de checkpoints.",
         planReady: "El teu pla de checkpoints està a punt.",
         reviewingPlan: "La IA està revisant l'estructura de la lectura i el perfil ASRS.",
         planReadySubtitle: "Pots mantenir el pla recomanat o fer un petit canvi abans de començar.",
+        chooseCompanion: "Abans de començar, tria el teu company de lectura.",
+        companionSubtitle: "Tria el company que vols tenir al teu costat mentre llegeixes.",
+        previewFocusPath: "Vista prèvia:",
+        minimalMode: "Mode minimalista",
+        companionReady: "Recomano {{count}} fites. Pots editar-ho abans de llegir.",
+        initialCompanionMessage: "Recomano {{count}} fites. Pots editar-ho abans de llegir.",
+        companions: {
+          calm: "Calmat",
+          steady: "Constant",
+          bright: "Lluminós",
+          quiet: "Tranquil",
+        },
         aiLabel: "IA",
         aiPreparing: "Estic preparant una recomanació de checkpoints.",
         aiRecommendation: "Per a aquestes lectures, recomano {{count}} checkpoints en pauses temàtiques naturals.",
@@ -574,8 +617,10 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         planLooksRight: "El teu pla de checkpoints sembla adequat per a aquesta lectura.",
         addCheckpoint: "Afegir checkpoint",
         useFewerCheckpoints: "Fer servir menys checkpoints",
+        keepCheckpointCount: "Mantenir el nombre de checkpoints",
         doneAdded: "He afegit un checkpoint perquè la resta quedi dividida en seccions més petites.",
         doneReduced: "He reduït els checkpoints perquè la lectura tingui menys interrupcions.",
+        doneKept: "He mantingut el mateix nombre de checkpoints.",
       },
       intro: {
         title: "IA per a la comprensió lectora",
@@ -601,7 +646,7 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
       instructions: {
         title: "Abans de començar",
         intro:
-          "Llegeix aquestes instruccions amb atenció abans de començar l'experiment. L'experiment té quatre parts: un qüestionari pre i post, i dues experiències de lectura amb un descans de 5 minuts entre elles.",
+          "Llegeix aquestes instruccions amb atenció abans de començar l'experiment.",
         whatWillYouDo: "Què faràs?",
         fourParts: "L'experiment té quatre parts.",
         preTitle: "Qüestionari pre-experiment",
@@ -616,7 +661,7 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         experienceQuestionnaire: "Qüestionari d'experiència",
         experienceADescription:
           "Aquesta experiència inclou eye tracking, així que començaràs amb una calibració utilitzant la teva càmera web. Després completaràs 3 rondes de lectura. Cada ronda té un text i 4 preguntes de comprensió. Després completaràs un breu qüestionari sobre la teva experiència.",
-        breakTitle: "Descans de 5 minuts",
+        breakTitle: "Descans de 5 minuts (opcional)",
         breakLabel: "Descans",
         breakTimer: "Temporitzador",
         breakBody:
@@ -650,6 +695,7 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         scoreNotReady: "La calibració ha acabat, però no s'ha pogut calcular la puntuació de validació perquè el sistema encara no està llest.",
         noPredictions: "La calibració s'ha completat, però no hi ha hagut prediccions de mirada estables per calcular la puntuació. Pots recalibrar i tornar-ho a provar.",
         accuracyMessage: "La teva precisió és del {{accuracy}} %. Continua a {{experience}} o recalibra si vols obtenir un resultat millor.",
+        recalibrateSuggestion: "Si la teva precisió és inferior al 85 %, recomanem recalibrar abans de continuar.",
         keepEyesFixed: "Mantén la mirada fixa en cada punt morat fins que acabi la mesura.",
         preparing: "Preparant webcam i seguiment ocular...",
         averageError: "Error mitjà de validació: aproximadament {{pixels}} px.",
@@ -735,17 +781,17 @@ En continuar, confirmes que has llegit i entès la informació anterior, que acc
       },
       post: {
         experience: {
-          label: "Prova cognitiva",
-          description: "Si us plau, respon les preguntes següents sobre la teva experiència durant l'experiment.",
-          stress: "Nivell d'estrès?",
-          feelings: "Com et sents?",
-        },
-        next: {
-          label: "Passos següents",
-          description: "Gràcies per participar! Fes clic a \"Següent\" per completar l'experiment i rebre més instruccions.",
-          keepInTouch: "Hauríem de mantenir el contacte?",
+          label: "Qüestionari final",
+          description: "Si us plau, respon les preguntes següents.",
+          difference: "Com van diferir les dues experiències de lectura per a tu, si és que van diferir en alguna cosa?",
+          feedback: "Alguna de les experiències de lectura va afectar la teva concentració, motivació o ritme de lectura? Explica-ho, si us plau.",
         },
       },
+      final:{
+        "thanks-i": "🎉 Estudi completat 🎉",
+        "thanks-ii": "Moltes gràcies per la teva participació!",
+        "instruction": "Un fitxer s'ha descarregat automàticament al teu dispositiu. Envia'l a la investigadora: michaela.freire01@estudiant.upf.edu",
+      }
     },
   },
 };

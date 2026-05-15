@@ -108,6 +108,7 @@ function ExperienceIntro() {
       state: {
         ...routeState,
         nextPath,
+        calibrationExperience: experience,
       },
     });
   };

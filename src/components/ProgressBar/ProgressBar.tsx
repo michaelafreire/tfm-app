@@ -10,22 +10,20 @@ type Step = {
 type ProgressBarProps = {
   steps: Step[];
   currentStep: number;
+  activeColor?: string;
 };
 
 
-function ProgressBar({ steps, currentStep }: ProgressBarProps) {
+function ProgressBar({ steps, currentStep, activeColor }: ProgressBarProps) {
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection:  "row",
-        height: "100%",
-        gap: 4,
-        alignItems: "left",
-        width: { xs: "auto", md: "100%" },
-        paddingTop: 4,
+        justifyContent: "flex-end",
+        width: "100%",
+        pt: 0.75,
       }}>
-      <Stack direction="row" spacing={3} alignItems="left">
+      <Stack direction="row" spacing={{ xs: 0.75, sm: 1.1, md: 1.25 }} alignItems="flex-start">
         {steps.map((step, index) => (
           <ProgressBarIcon
             key={step.id}
@@ -33,6 +31,8 @@ function ProgressBar({ steps, currentStep }: ProgressBarProps) {
             label={step.label}
             isActive={index === currentStep}
             isCompleted={index < currentStep}
+            showLabel={false}
+            activeColor={activeColor}
           />
         ))}
       </Stack>

@@ -1,50 +1,65 @@
-import { Typography } from "@mui/material"
-import Avatar from '@mui/material/Avatar';
-import { Box } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import theme from "../../theme/theme";
-import { alpha } from '@mui/material/styles';
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+import { Box, Tooltip, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 type ProgressBarIconProps = {
-  id : string;
+  id: string;
   label: string;
   isActive?: boolean;
   isCompleted?: boolean;
+  showLabel?: boolean;
+  activeColor?: string;
 };
 
-function ProgressBarIcon({ id, label, isActive, isCompleted }: ProgressBarIconProps) {
-  const avatarText = isCompleted ? <CheckIcon />: id;
+function ProgressBarIcon({ id, label, isActive = false, isCompleted = false, showLabel = false, activeColor }: ProgressBarIconProps) {
+  const filledColor = activeColor ?? "primary.main";
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        alignItems: "center",
-      }}>
-      <Avatar sx={{
-        bgcolor: isCompleted
-          ? "primary.main"
-          : isActive
-          ? alpha(theme.palette.primary.main, 0.5)
-          : 'disabled.main',
-        color: "background.paper",
-      }}>
-        {avatarText}
-      </Avatar>
-      <Typography
+    <Tooltip title={label} arrow placement="top">
+      <Box
         sx={{
-          paddingTop: { xs: 1, md: 0 },
-          paddingLeft: { md: 2 },
-          fontWeight: isActive ? "bold" : 500,
-          color: isActive ? "text.primary" : "text.secondary",
-          fontSize: "0.82rem",
+          minWidth: 30,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 0.75,
         }}
       >
-        {label}
-      </Typography>
-    </Box>
-  )
+        <Box
+          sx={{
+            width: isActive ? 30 : 26,
+            height: isActive ? 30 : 26,
+            borderRadius: "50%",
+            bgcolor: isCompleted || isActive ? filledColor : "background.paper",
+            border: isCompleted || isActive ? "none" : "1px solid",
+            borderColor: "action.disabled",
+            color: isCompleted || isActive ? "background.paper" : "text.secondary",
+            boxShadow: isActive ? (theme) => `0 0 0 5px ${alpha(activeColor ?? theme.palette.primary.main, 0.12)}` : "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.85rem",
+            fontWeight: 800,
+            transition: "all 180ms ease",
+          }}
+        >
+          {isCompleted ? <CheckRoundedIcon sx={{ fontSize: 18 }} /> : id}
+        </Box>
+        {showLabel ? (
+          <Typography
+            variant="caption"
+            sx={{
+              color: filledColor,
+              fontWeight: 800,
+              lineHeight: 1,
+            }}
+          >
+            {label}
+          </Typography>
+        ) : null}
+      </Box>
+    </Tooltip>
+  );
 }
 
-export default ProgressBarIcon
+export default ProgressBarIcon;

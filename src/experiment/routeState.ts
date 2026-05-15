@@ -7,6 +7,9 @@ export type ExperimentRouteState = {
   language?: ExperimentLanguage;
   nextPath?: string;
   introExperience?: "A" | "B";
+  calibrationExperience?: "A" | "B";
+  calibrationAccuracyPercent?: number;
+  calibrationAverageErrorPx?: number;
   asrsPartAScore?: number;
   asrsClassification?: "baselineLowTraits" | "highTraitsThreshold";
   ticksPerReading?: 2 | 4;

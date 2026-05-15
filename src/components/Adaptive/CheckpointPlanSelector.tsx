@@ -1,11 +1,14 @@
 import { Box, Button, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
-import DiamondRoundedIcon from "@mui/icons-material/DiamondRounded";
 import { useTranslation } from "react-i18next";
 import type { AdaptiveTheme } from "../../experiment/adaptiveConfig";
-import { getMarkerColor, type MarkerStyle } from "./AdaptiveProgressBar";
+import {
+  companionOptions,
+  normalizeCompanionStyle,
+  type CompanionStyle,
+  type MarkerStyle,
+} from "./AdaptiveProgressBar";
+import FocusCompanion from "./FocusCompanion";
 
 type CheckpointPlanSelectorProps = {
   theme: AdaptiveTheme;
@@ -19,259 +22,136 @@ type CheckpointPlanSelectorProps = {
   isLoading?: boolean;
 };
 
-const markerOptions: Array<{ value: MarkerStyle; labelKey: string; icon: typeof DiamondRoundedIcon }> = [
-  { value: "diamond", labelKey: "adaptive.markers.diamond", icon: DiamondRoundedIcon },
-  { value: "heart", labelKey: "adaptive.markers.heart", icon: FavoriteRoundedIcon },
-  { value: "star", labelKey: "adaptive.markers.star", icon: StarRoundedIcon },
-];
-
-function getCountOptions(recommendedCount: number) {
-  const boundedRecommendation = Math.max(1, Math.min(5, recommendedCount));
-  const options = new Set([1, boundedRecommendation, 5]);
-
-  for (let count = 1; options.size < 3 && count <= 5; count += 1) {
-    options.add(count);
-  }
-
-  return Array.from(options)
-    .sort((a, b) => Math.abs(a - boundedRecommendation) - Math.abs(b - boundedRecommendation) || a - b)
-    .slice(0, 3)
-    .sort((a, b) => a - b);
-}
-
 function CheckpointPlanSelector({
   theme,
-  recommendedCount,
   selectedCount,
-  onCountChange,
   markerStyle,
   onMarkerStyleChange,
-  readingCount,
-  recommendationReason,
-  isLoading = false,
 }: CheckpointPlanSelectorProps) {
   const { t } = useTranslation();
-  const countOptions = getCountOptions(recommendedCount);
-  const SelectedMarkerIcon = markerOptions.find((option) => option.value === markerStyle)?.icon ?? DiamondRoundedIcon;
-  const previewCount = Math.min(selectedCount, 4);
-  const markerColor = getMarkerColor(markerStyle, theme);
-  const getPreviewLabel = (index: number) => {
-    if (index === 0) return t("adaptive.previewStart");
-    if (index === previewCount - 1 && previewCount > 3) return t("adaptive.previewSummary");
-    return t("adaptive.previewKeyIdea", { number: index });
-  };
+
+  const selectedCompanion = normalizeCompanionStyle(markerStyle);
+  const previewDots = Math.max(1, Math.min(5, selectedCount));
 
   return (
-    <Box sx={{ mx: 2, mt: 3, display: "flex", flexDirection: "column", gap: 2.25 }}>
-
-      <Box>
-          <Typography variant="body1" sx={{ fontWeight: 700 }}>
-          {isLoading ? t("adaptive.preparingPlan") : t("adaptive.planReady")}
+    <Box
+      sx={{
+        mx: "auto",
+        mt: 3,
+        width: "100%",
+        maxWidth: 820,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2.5,
+        alignItems: "center",
+      }}
+    >
+      <Box sx={{ width: "100%", textAlign: "left" }}>
+        <Typography variant="body1" sx={{ fontWeight: 800 }}>
+          {t("adaptive.chooseCompanion")}
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-          {isLoading
-            ? t("adaptive.reviewingPlan")
-            : t("adaptive.planReadySubtitle")}
+          {t("adaptive.companionSubtitle")}
         </Typography>
       </Box>
 
       <Box
         sx={{
-          bgcolor: "secondary.main",
-          borderRadius: 3,
-          p: 2,
-          display: "flex",
-          alignItems: "flex-start",
+          width: "100%",
+          display: "grid",
+          gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
           gap: 1.5,
         }}
       >
-        <Box
-          sx={{
-            width: 42,
-            height: 42,
-            borderRadius: "50%",
-            background: theme.gradient,
-            color: "#fff",
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          {t("adaptive.aiLabel")}
-        </Box>
-        <Box>
-          <Typography variant="body2" sx={{ fontWeight: 700 }}>
-            {isLoading
-              ? t("adaptive.aiPreparing")
-              : t("adaptive.aiRecommendation", { count: recommendedCount })}
-          </Typography>
-          <Typography variant="body2" sx={{ mt: 0.5, color: "text.secondary" }}>
-            {isLoading
-              ? t("adaptive.aiTakesSeconds")
-              : recommendationReason ?? t("adaptive.aiDefaultReason")}
-          </Typography>
-        </Box>
+        {companionOptions.map((option) => {
+          const selected = selectedCompanion === option.value;
+          return (
+            <Button
+              key={option.value}
+              variant="outlined"
+              onClick={() => onMarkerStyleChange(option.value as CompanionStyle)}
+              sx={{
+                minHeight: 156,
+                borderRadius: 2,
+                borderColor: selected ? theme.accent : alpha("#262a2c", 0.12),
+                bgcolor: selected ? alpha(theme.accent, 0.06) : "background.paper",
+                boxShadow: selected ? `0 0 0 2px ${alpha(theme.accent, 0.1)}` : "0 8px 28px rgba(38,42,44,0.04)",
+                textTransform: "none",
+                color: "text.primary",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1.25,
+              }}
+            >
+              <FocusCompanion style={option.value} size={70} />
+              <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                {t(option.labelKey)}
+              </Typography>
+            </Button>
+          );
+        })}
       </Box>
 
-      {!isLoading ? (
-        <>
-
-      <Box>
-        <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-          {t("adaptive.numberOfCheckpoints")}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
+        <Box sx={{ height: 1, bgcolor: alpha("#262a2c", 0.08), flex: 1 }} />
+        <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 800 }}>
+          {t("adaptive.previewFocusPath")}
         </Typography>
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" }, gap: 1 }}>
-          {countOptions.map((count) => {
-            const selected = selectedCount === count;
-            return (
-              <Button
-                key={count}
-                variant="outlined"
-                onClick={() => onCountChange(count)}
-                sx={{
-                  minHeight: 72,
-                  borderRadius: 2,
-                  borderColor: selected ? theme.accent : "action.disabled",
-                  color: selected ? theme.accent : "text.secondary",
-                  bgcolor: selected ? "background.paper" : "rgba(255,255,255,0.72)",
-                  boxShadow: selected ? `0 0 0 2px ${theme.soft}` : "none",
-                  textTransform: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                  fontWeight: 700,
-                }}
-              >
-                <Typography sx={{ fontWeight: 800, fontSize: "1.25rem" }}>{count}</Typography>
-                <Typography variant="caption">{t("adaptive.checkpoints")}</Typography>
-              </Button>
-            );
-          })}
-        </Box>
-        <Typography variant="caption" sx={{ mt: 0.75, color: "text.secondary", display: "block" }}>
-          {t("adaptive.recommendedForReadings", { count: recommendedCount, readings: readingCount })}
-        </Typography>
+        <Box sx={{ height: 1, bgcolor: alpha("#262a2c", 0.08), flex: 1 }} />
       </Box>
 
-      <Box>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "210px 1fr" },
-            gap: 1.25,
-            alignItems: "center",
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 700 }}>
-              {t("adaptive.markerStyle")}
-            </Typography>
-            <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              {t("adaptive.optional")}
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-            {markerOptions.map(({ value, labelKey, icon: Icon }) => {
-              const selected = markerStyle === value;
-              const optionColor = getMarkerColor(value, theme);
-              return (
-                <Button
-                  key={value}
-                  variant="outlined"
-                  onClick={() => onMarkerStyleChange(value)}
-                  startIcon={<Icon sx={{ color: optionColor }} />}
-                  sx={{
-                    minWidth: 130,
-                    borderRadius: 2,
-                    borderColor: selected ? alpha(optionColor, 0.75) : "action.disabled",
-                    color: selected ? "text.primary" : "text.primary",
-                    bgcolor: selected ? "background.paper" : "rgba(255,255,255,0.72)",
-                    boxShadow: selected ? `0 0 0 2px ${alpha(optionColor, 0.16)}` : "none",
-                    textTransform: "none",
-                    fontWeight: 700,
-                    position: "relative",
-                  }}
-                >
-                  {t(labelKey)}
-                  {selected ? (
-                    <Box
-                      component="span"
-                      sx={{
-                        position: "absolute",
-                        top: 6,
-                        right: 7,
-                        width: 15,
-                        height: 15,
-                        borderRadius: "50%",
-                        bgcolor: optionColor,
-                        color: "#fff",
-                        fontSize: "0.6rem",
-                        lineHeight: "15px",
-                      }}
-                    >
-                      ✓
-                    </Box>
-                  ) : null}
-                </Button>
-              );
-            })}
-          </Box>
+      <Box
+        sx={{
+          width: "100%",
+          maxWidth: 520,
+          border: `1px solid ${alpha(theme.accent, 0.12)}`,
+          borderRadius: 2,
+          p: 2,
+          display: "grid",
+          gridTemplateColumns: "1fr 74px",
+          gap: 2,
+          alignItems: "center",
+          bgcolor: alpha(theme.accent, 0.04),
+        }}
+      >
+        <Box sx={{ border: `1px solid ${alpha("#262a2c", 0.08)}`, borderRadius: 2, p: 2 }}>
+          <Box sx={{ width: 110, height: 6, borderRadius: 999, bgcolor: alpha("#262a2c", 0.16), mb: 1.5 }} />
+          {Array.from({ length: 7 }, (_, index) => (
+            <Box
+              key={`preview-line-${index}`}
+              sx={{
+                width: `${index % 3 === 0 ? 72 : index % 2 === 0 ? 88 : 100}%`,
+                height: 4,
+                borderRadius: 999,
+                bgcolor: alpha("#262a2c", 0.08),
+                mb: 1,
+              }}
+            />
+          ))}
         </Box>
-      </Box>
-
-      <Box>
-        <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>
-          {t("adaptive.preview")}
-        </Typography>
-        <Box
-          sx={{
-            border: `1px solid ${alpha(theme.accent, 0.18)}`,
-            borderRadius: 2,
-            p: { xs: 1.5, sm: 2 },
-            bgcolor: "rgba(255,255,255,0.74)",
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              display: "grid",
-              gridTemplateColumns: `repeat(${previewCount}, minmax(0, 1fr))`,
-              alignItems: "center",
-              columnGap: 1,
-              px: 1.5,
-              "&::before": {
-                content: '""',
+        <Box sx={{ position: "relative", height: 156, mx: "auto", width: 44 }}>
+          <Box sx={{ position: "absolute", left: "50%", top: 8, bottom: 8, width: 2, bgcolor: alpha(theme.accent, 0.18), transform: "translateX(-50%)" }} />
+          {Array.from({ length: previewDots }, (_, index) => (
+            <Box
+              key={`preview-dot-${index}`}
+              sx={{
                 position: "absolute",
-                left: 28,
-                right: 28,
-                top: 15,
-                height: 2,
-                bgcolor: alpha(markerColor, 0.26),
-              },
-            }}
-          >
-            {Array.from({ length: previewCount }, (_, index) => {
-              const isStart = index === 0;
-              return (
-                <Box key={`preview-${index}`} sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-                  <Box sx={{ color: isStart ? markerColor : alpha(markerColor, 0.58), height: 30 }}>
-                    <SelectedMarkerIcon sx={{ fontSize: 28 }} />
-                  </Box>
-                  <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 700 }}>
-                    {getPreviewLabel(index)}
-                  </Typography>
-                </Box>
-              );
-            })}
+                left: "50%",
+                top: previewDots === 1 ? "50%" : `${(index / (previewDots - 1)) * 100}%`,
+                width: 9,
+                height: 9,
+                borderRadius: "50%",
+                bgcolor: index < 2 ? theme.accent : "background.paper",
+                border: `2px solid ${index < 2 ? theme.accent : alpha("#262a2c", 0.16)}`,
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          ))}
+          <Box sx={{ position: "absolute", left: "50%", top: "42%", transform: "translate(-50%, -50%)" }}>
+            <FocusCompanion style={selectedCompanion} size={34} />
           </Box>
         </Box>
-        <Typography variant="caption" sx={{ mt: 1, color: "text.secondary", display: "block" }}>
-          {t("adaptive.previewDescription")}
-        </Typography>
       </Box>
-        </>
-      ) : null}
     </Box>
   );
 }

@@ -22,6 +22,8 @@ type Question = {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   choice?: Choice[];
   required?: boolean;
+  multilineRows?: number;
+  width?: string;
 };
 
 type Step = {
@@ -42,18 +44,21 @@ function Post() {
   const savedDraft = useMemo(
     () => readLocalDraft(draftKey, {
       currentStep: 0,
-      feelings: "",
+      feedback: "",
+      difference: "",
     }),
     [draftKey],
   );
   const [currentStep, setCurrentStep] = useState<number>(savedDraft.currentStep);
   const navigate = useNavigate();
-  const [feelings, setFeelings] = useState(savedDraft.feelings);
+  const [feedback, setFeedback] = useState(savedDraft.feedback);
+  const [difference, setDifference] = useState(savedDraft.difference);
   const { clearDraft } = useLocalDraft(
     draftKey,
     {
       currentStep,
-      feelings,
+      feedback,
+      difference,
     },
     Boolean(participantCode),
   );
@@ -83,7 +88,8 @@ function Post() {
         participant_code: participantCode,
         group_number: groupNumber,
         phase: "post",
-        feelings: feelings,
+        feedback: feedback,
+        difference: difference,
         // Add other responses here
       }
     ]);
@@ -97,25 +103,24 @@ function Post() {
       question: [
         {
           id: '1-1',
-          label: t("post.experience.stress"),
-          type: 'multiple-choice'
+          label: t("post.experience.difference"),
+          type: 'text',
+          value: difference,
+          onChange: (e) => setDifference(e.target.value),
+          required: true,
+          multilineRows: 3,
+          width: "65%",
         },
         {
           id: '1-2',
-          label: t("post.experience.feelings"),
+          label: t("post.experience.feedback"),
           type: 'text',
-          value: feelings,
-          onChange: (e) => setFeelings(e.target.value),
+          value: feedback,
+          onChange: (e) => setFeedback(e.target.value),
           required: true,
+          multilineRows: 3,
+          width: "65%",
         },
-      ]
-    },
-    {
-      id: '2',
-      label: t("post.next.label"),
-      description: t("post.next.description"),
-      question: [
-        { id: '2-1', label: t("post.next.keepInTouch"), type: 'checkbox' },
       ]
     },
   ];

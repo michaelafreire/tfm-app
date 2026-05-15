@@ -126,7 +126,7 @@ function sanitizeInitialPlan(data: unknown, fallbackRecommended: number, reading
   return {
     source: "openai",
     recommendedCheckpoints,
-    reason: String(raw.reason ?? fallback.reason).slice(0, 220),
+    reason: String(raw.reason ?? fallback.reason).trim(),
     options: sanitizeOptions(raw.options, recommendedCheckpoints || fallbackRecommended),
     readings: sanitizedReadings,
   };
@@ -145,7 +145,7 @@ function sanitizeSuggestion(data: unknown, language?: string): AdaptiveSuggestio
     source: "openai",
     recommendation,
     target,
-    message: String(raw.message ?? fallback.suggestion).slice(0, 220),
+    message: String(raw.message ?? fallback.suggestion).trim(),
   };
 }
 

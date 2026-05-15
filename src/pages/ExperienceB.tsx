@@ -6,7 +6,7 @@ import experimentImage from '../assets/experiment.png';
 import AdaptiveProgressBar, { type MarkerStyle } from '../components/Adaptive/AdaptiveProgressBar';
 import CheckpointPlanSelector from '../components/Adaptive/CheckpointPlanSelector';
 import AttentionProbeModal from '../components/Adaptive/AttentionProbeModal';
-import CoachBubble from '../components/Adaptive/CoachBubble';
+import ReadingCompanionRail from "../components/Adaptive/ReadingCompanionRail";
 import ColorButton from '../components/ColorButton';
 import FormSpace from '../components/Form/FormSpace';
 import ProgressBar from '../components/ProgressBar/ProgressBar';
@@ -50,13 +50,14 @@ type ReadingTiming = {
 type ProbeResponse = "task-focused" | "distracted by thoughts" | "other";
 type CheckpointSuggestion = {
   stepId: string;
-  direction: "more" | "less";
+  direction: "more" | "less" | "same";
   message: string;
   actionLabel: string;
 } | null;
 const GAZE_SAMPLE_INTERVAL_MS = 100;
 const CHECKPOINT_DIM_START_MS = 30_000;
 const CHECKPOINT_DIM_FULL_MS = 75_000;
+const COMPANION_SLEEPY_START_MS = 140_000;
 const gazeStorageKey = (participantCode: string, task: "A" | "B") => `tfm-gaze:${task}:${participantCode}`;
 
 function readStoredGazeData(participantCode: string, task: "A" | "B") {
@@ -119,7 +120,7 @@ function ExperienceB() {
       checkpointCountsByStep: {} as Record<string, number>,
       completedCheckpointsByStep: {} as Record<string, number>,
       checkpointPlacementsByStep: {} as Record<string, CheckpointPlacement[]>,
-      markerStyle: "diamond" as MarkerStyle,
+      markerStyle: "calm" as MarkerStyle,
       aiRecommendedCheckpointCount: undefined as number | undefined,
       aiRecommendationReason: undefined as string | undefined,
       aiReadingNotesByStep: {} as Record<string, string>,
@@ -143,6 +144,7 @@ function ExperienceB() {
   const [markerStyle, setMarkerStyle] = useState<MarkerStyle>(savedDraft.markerStyle);
   const [shiningCheckpoint, setShiningCheckpoint] = useState<{ stepId: string; checkpointIndex: number } | null>(null);
   const [checkpointDimByStep, setCheckpointDimByStep] = useState<Record<string, number>>({});
+  const [sleepyCompanionByStep, setSleepyCompanionByStep] = useState<Record<string, boolean>>({});
   const [probeAttentionWarningByStep, setProbeAttentionWarningByStep] = useState<Record<string, boolean>>({});
   const [probeOpen, setProbeOpen] = useState(false);
   const [activeProbeStepId, setActiveProbeStepId] = useState<string | null>(null);
@@ -210,12 +212,26 @@ function ExperienceB() {
 
   const suggestCheckpointChange = useCallback((
     step: Step,
-    direction: "more" | "less",
+    direction: "more" | "less" | "same",
     message: string,
   ) => {
     if (!isAdaptive) return;
 
     const currentCount = checkpointCountsByStep[step.id] ?? 3;
+    if (direction === "same") {
+      setCheckpointSuggestion({
+        stepId: step.id,
+        direction,
+        message,
+        actionLabel: t("adaptive.keepCheckpointCount"),
+      });
+      setAiReadingNotesByStep((prev) => ({
+        ...prev,
+        [step.id]: message,
+      }));
+      return;
+    }
+
     if ((direction === "more" && currentCount >= 5) || (direction === "less" && currentCount <= 1)) {
       setAiReadingNotesByStep((prev) => ({
         ...prev,
@@ -244,6 +260,15 @@ function ExperienceB() {
     if (!checkpointSuggestion) return;
 
     const { stepId, direction } = checkpointSuggestion;
+    if (direction === "same") {
+      setCheckpointSuggestion(null);
+      setAiReadingNotesByStep((prev) => ({
+        ...prev,
+        [stepId]: t("adaptive.doneKept"),
+      }));
+      return;
+    }
+
     setCheckpointCountsByStep((prev) => {
       const nextCount = clampCheckpointCount((prev[stepId] ?? 3) + (direction === "more" ? 1 : -1));
       return { ...prev, [stepId]: nextCount };
@@ -301,6 +326,33 @@ function ExperienceB() {
     [readingSteps, routeState.asrsPartAScore],
   );
   const recommendedCheckpointCount = aiRecommendedCheckpointCount ?? localRecommendedCheckpointCount;
+  const getMilestonePercents = useCallback((step: Step) => {
+    const paragraphCount = step.description.split("\n").map((line) => line.trim()).filter(Boolean).length;
+    const placements = checkpointPlacementsByStep[step.id] ?? [];
+    const total = checkpointCountsByStep[step.id] ?? recommendedCheckpointCount;
+    if (placements.length !== Math.max(0, total - 1)) {
+      return Array.from({ length: total }, (_, index) => ((index + 1) / total) * 100);
+    }
+
+    const percents = placements.map((placement) => {
+      const paragraphIndex = Math.max(1, Math.min(paragraphCount, placement.afterParagraph));
+      return (paragraphIndex / Math.max(1, paragraphCount)) * 100;
+    });
+    while (percents.length < total) percents.push(100);
+    return percents.slice(0, total);
+  }, [checkpointCountsByStep, checkpointPlacementsByStep, recommendedCheckpointCount]);
+
+  useEffect(() => {
+    if (!isAdaptive || isInitialPlanLoading || readingSteps.length === 0) return;
+    const firstReading = readingSteps[0];
+    setAiReadingNotesByStep((prev) => {
+      if (prev[firstReading.id]) return prev;
+      return {
+        ...prev,
+        [firstReading.id]: t("adaptive.initialCompanionMessage", { count: checkpointCountsByStep[firstReading.id] ?? recommendedCheckpointCount }),
+      };
+    });
+  }, [checkpointCountsByStep, isAdaptive, isInitialPlanLoading, readingSteps, recommendedCheckpointCount, t]);
 
   useEffect(() => {
     if (!isAdaptive || readingSteps.length === 0 || initialPlanRequestedRef.current) return;
@@ -324,6 +376,10 @@ function ExperienceB() {
       if (plan) {
         setAiRecommendedCheckpointCount(plan.recommendedCheckpoints);
         setAiRecommendationReason(plan.reason);
+        setAiReadingNotesByStep((prev) => ({
+          ...prev,
+          [readingSteps[0].id]: plan.reason,
+        }));
         setCheckpointCountsByStep((prev) => {
           const next = { ...prev };
           plan.readings.forEach((reading) => {
@@ -513,12 +569,13 @@ function ExperienceB() {
       const now = Date.now();
       const previousScrollAt = lastScrollAtRef.current[step.id] ?? now;
       lastScrollAtRef.current[step.id] = now;
+      setSleepyCompanionByStep((prev) => (prev[step.id] ? { ...prev, [step.id]: false } : prev));
       setProbeAttentionWarningByStep((prev) => (prev[step.id] ? { ...prev, [step.id]: false } : prev));
 
       const maxScroll = container.scrollHeight - container.clientHeight;
       const nextProgress = maxScroll <= 0
         ? 100
-        : Math.max(0, Math.min(100, Math.round((container.scrollTop / maxScroll) * 100)));
+        : Math.max(0, Math.min(100, (container.scrollTop / maxScroll) * 100));
 
       setReadingProgressByStep((prev) => {
         if (prev[step.id] === nextProgress) return prev;
@@ -555,7 +612,13 @@ function ExperienceB() {
         }).length;
         const checkpointSize = 100 / totalCheckpoints;
         const fallbackCompleted = Math.min(totalCheckpoints, Math.floor(nextProgress / checkpointSize));
-        const nextCompleted = checkpointDividers.length > 0 ? dividerCompleted : fallbackCompleted;
+        const aiMilestoneCompleted = getMilestonePercents(step).filter((percent) => percent <= nextProgress).length;
+        const hasMatchingAiPlacements = (checkpointPlacementsByStep[step.id]?.length ?? 0) === Math.max(0, totalCheckpoints - 1);
+        const nextCompleted = checkpointDividers.length > 0
+          ? dividerCompleted
+          : hasMatchingAiPlacements
+            ? aiMilestoneCompleted
+            : fallbackCompleted;
         const previousCompleted = completedCheckpointsByStep[step.id] ?? 0;
 
         if (nextCompleted !== previousCompleted) {
@@ -638,6 +701,12 @@ function ExperienceB() {
       );
       const probeDim = probeAttentionWarningByStep[currentStepId] ? 0.85 : 0;
       const nextDim = Math.max(noScrollDim, probeDim);
+      const nextSleepy = noScrollMs >= COMPANION_SLEEPY_START_MS;
+
+      setSleepyCompanionByStep((prev) => {
+        if ((prev[currentStepId] ?? false) === nextSleepy) return prev;
+        return { ...prev, [currentStepId]: nextSleepy };
+      });
 
       setCheckpointDimByStep((prev) => {
         if (Math.abs((prev[currentStepId] ?? 0) - nextDim) < 0.03) return prev;
@@ -703,10 +772,7 @@ function ExperienceB() {
         } else if (aiSuggestion.recommendation === "reduce_checkpoints") {
           suggestCheckpointChange(nextReadingStep, "less", aiSuggestion.message);
         } else {
-          setAiReadingNotesByStep((prev) => ({
-            ...prev,
-            [nextReadingStep.id]: aiSuggestion.message,
-          }));
+          suggestCheckpointChange(nextReadingStep, "same", aiSuggestion.message);
         }
         pauseTracking();
         setActiveSectionId(null);
@@ -730,10 +796,7 @@ function ExperienceB() {
           } else if (backupSuggestion.direction === "less") {
             suggestCheckpointChange(nextReadingStep, "less", backupSuggestion.message);
           } else {
-            setAiReadingNotesByStep((prev) => ({
-              ...prev,
-              [nextReadingStep.id]: backupSuggestion.message,
-            }));
+            suggestCheckpointChange(nextReadingStep, "same", backupSuggestion.message);
           }
         }
       }
@@ -774,6 +837,9 @@ function ExperienceB() {
         participant_code: participantCode,
         group_number: groupNumber,
         phase: "experienceb",
+        calibration_experience: routeState.calibrationExperience ?? "B",
+        calibration_accuracy_percent: routeState.calibrationAccuracyPercent ?? null,
+        calibration_average_error_px: routeState.calibrationAverageErrorPx ?? null,
         e2_r1_p: probeAnswerByStepId["2"] ?? null,
         e2_r2_p: probeAnswerByStepId["3"] ?? null,
         e2_r3_p: probeAnswerByStepId["4"] ?? null,
@@ -962,15 +1028,15 @@ function ExperienceB() {
       <Box ref={progressAreaRef} sx={{
         bgcolor: "secondary.main",
         borderRadius: 3,
-        p: 3,
-        flex: 1,
-        height: { xs: "auto", md: "100%" },
+        p: { xs: 2.25, md: 2 },
+        flex: "0 0 auto",
+        minHeight: { xs: 170, md: 132 },
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
         position: "relative",
       }}>
-        <Box sx={{ position: "absolute", top: 24, right: 24 }}>
+        <Box sx={{ position: "absolute", top: { xs: 18, md: 20 }, right: { xs: 18, md: 20 } }}>
           <PartPill label={t("part.three")} />
         </Box>
         <img src={experimentImage} alt="App Logo" style={{ width: 35, height: "auto" }} />
@@ -988,7 +1054,7 @@ function ExperienceB() {
             {t("experienceIntro.titleB")}
           </Typography>
         </Box>
-        {isAdaptive && currentStep > 0 ? (
+        {isAdaptive ? (
           <>
             <AdaptiveProgressBar
               steps={steps.map(({ id, label }) => ({ id, label }))}
@@ -1022,6 +1088,7 @@ function ExperienceB() {
           sx={{
             width: '100%',
             flex: 4,
+            pr: isAdaptive && currentStepIsReading && !currentStepCompleted ? { xs: 0, md: 20 } : 0,
             overflowY: 'auto',
             overflowX: 'hidden',
             minHeight: 0,
@@ -1031,40 +1098,20 @@ function ExperienceB() {
               height: 8,
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#d1f2ea',
+              backgroundColor: isAdaptive && currentStepIsReading && !currentStepCompleted ? 'transparent' : '#d1f2ea',
               borderRadius: 4,
             },
             '&::-webkit-scrollbar-track': {
               background: 'transparent',
             },
             scrollbarWidth: 'thin',
-            scrollbarColor: '#d1f2ea transparent',
+            scrollbarColor: isAdaptive && currentStepIsReading && !currentStepCompleted ? 'transparent transparent' : '#d1f2ea transparent',
           }}>
           <FormSpace
             steps={steps}
             currentStep={currentStep}
             completedReadingSteps={completedReadingSteps}
             onCompleteReadingStep={handleCompleteReading}
-            checkpointCountsByStep={isAdaptive ? checkpointCountsByStep : undefined}
-            completedCheckpointsByStep={isAdaptive ? completedCheckpointsByStep : undefined}
-            markerStyle={markerStyle}
-            adaptiveTheme={isAdaptive ? theme : undefined}
-            checkpointPlacementsByStep={isAdaptive ? checkpointPlacementsByStep : undefined}
-            readingIntroByStep={
-              isAdaptive && currentStepIsReading && !currentStepCompleted && currentStepId && aiReadingNotesByStep[currentStepId]
-                ? {
-                    [currentStepId]: (
-                      <CoachBubble
-                        message={aiReadingNotesByStep[currentStepId]}
-                        theme={theme}
-                        actionLabel={checkpointSuggestion?.stepId === currentStepId ? checkpointSuggestion.actionLabel : undefined}
-                        onAction={checkpointSuggestion?.stepId === currentStepId ? applyCheckpointSuggestion : undefined}
-                      />
-                    ),
-                  }
-                : undefined
-            }
-            shiningCheckpoint={shiningCheckpoint}
           />
           {isAdaptive && currentStep === 0 ? (
             <CheckpointPlanSelector
@@ -1089,6 +1136,32 @@ function ExperienceB() {
             />
           ) : null}
         </Box>
+        {isAdaptive && currentStepIsReading && !currentStepCompleted && currentStepId ? (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 24,
+              right: 6,
+              bottom: 96,
+              display: { xs: "none", md: "block" },
+            }}
+          >
+            <ReadingCompanionRail
+              theme={theme}
+              companionStyle={markerStyle}
+              total={checkpointCountsByStep[currentStepId] ?? recommendedCheckpointCount}
+              completed={completedCheckpointsByStep[currentStepId] ?? 0}
+              progress={readingProgressByStep[currentStepId] ?? 0}
+              milestonePercents={getMilestonePercents(steps[currentStep])}
+              message={aiReadingNotesByStep[currentStepId]}
+              actionLabel={checkpointSuggestion?.stepId === currentStepId ? checkpointSuggestion.actionLabel : undefined}
+              onAction={checkpointSuggestion?.stepId === currentStepId ? applyCheckpointSuggestion : undefined}
+              isShining={shiningCheckpoint?.stepId === currentStepId}
+              rewardCheckpointIndex={shiningCheckpoint?.stepId === currentStepId ? shiningCheckpoint.checkpointIndex : undefined}
+              isSleepy={sleepyCompanionByStep[currentStepId] === true}
+            />
+          </Box>
+        ) : null}
         <Box sx={{
           flex: 1,
           width: "100%",

@@ -27,7 +27,7 @@ export function useWebGazer() {
       webgazer.showVideoPreview(true);
       webgazer.showFaceOverlay(true);
       webgazer.showFaceFeedbackBox(true);
-      webgazer.showPredictionPoints(true);
+      webgazer.showPredictionPoints(false);
       return;
     }
 
@@ -36,7 +36,7 @@ export function useWebGazer() {
       webgazer.showFaceFeedbackBox(false);
       webgazer.showVideoPreview(false);
       webgazer.showVideo(false);
-      webgazer.showPredictionPoints(true);
+      webgazer.showPredictionPoints(false);
       void Promise.resolve(webgazer.resume());
       return;
     }

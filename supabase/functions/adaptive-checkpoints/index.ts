@@ -44,7 +44,7 @@ function jsonResponse(body: unknown, status = 200) {
 function clampCheckpointCount(value: unknown) {
   const count = Math.round(Number(value));
   if (!Number.isFinite(count)) return 3;
-  return Math.max(1, Math.min(5, count));
+  return Math.max(1, Math.min(4, count));
 }
 
 function countWords(text: string) {
@@ -75,8 +75,13 @@ function buildInitialPrompt(input: InitialPlanRequest) {
       "Use 1 only for very easy or very short readings.",
       "Return paragraph boundaries as 1-based paragraph indexes.",
       "The number of checkpoint boundary objects for each reading must be checkpointCount - 1.",
-      "The chunks of text should be of similar lengths but making sure that the checkpoints fall on natural topic or subtopic boundaries when possible. Avoid splitting paragraphs.",
+      "The chunks of text should be of similar lengths between each other. For instance, if the text is chunked in three parts, the parts should be in as similar length as possible",
+      "Never create a chunk that is only one sentence long.",
+      "Make sure that the checkpoints fall on natural topic or subtopic boundaries. Avoid splitting paragraphs and avoid splitting sentences half way.",
       "Write every participant-facing string, including reason and checkpoint labels, in the requested language.",
+      "In the participant facing string, before explaining the amount of milestones, briefly introduce yourself saying Hello and that you are the reading companion, and you will help with managing progress by separating the text","Be warm and friendly but not overly",
+      "Even though you will use the ASRS score to adapt the milestones, don't explicitly say that",
+      "Your message should be between 20 - 50 words long"
     ],
     readings,
   };
@@ -94,21 +99,29 @@ function buildSuggestionPrompt(input: AfterReadingRequest) {
     probeResponseTimeMs: input.probeResponseTimeMs ?? null,
     longestNoScrollMs: input.longestNoScrollMs ?? null,
     rules: [
-      "Suggestions target next_reading.",
-      "Base the recommendation only on the previous reading's probe result, raw probe response time, and scrolling behaviour.",
+      "Make your suggestion for the next_reading only.",
+      "Base the recommendation only on the previous reading’s probe result, raw probe response time, and scrolling behaviour.",
       "Do not use total reading completion time. Slow reading can reflect careful, detailed reading.",
       "Scrolling behaviour is represented by scrollDirectionChanges: higher values mean more back-and-forth movement; low values mean steadier downward progress.",
       "longestNoScrollMs is the longest pause without scrolling during the reading. Treat only unusually long pauses as possible distraction; normal pauses may reflect careful reading.",
       "Use probeResponseTimeMs as a raw signal. Decide from the context whether it seems meaningfully long; do not apply a fixed cutoff blindly.",
       "Suggest add_checkpoint if scrolling was erratic, the probe was off-task, probe response time was meaningfully long, or longestNoScrollMs suggests a substantial pause.",
       "Suggest reduce_checkpoints only if scrolling was steady, the probe was task-focused, probe response time was not meaningfully long, longestNoScrollMs was not concerning, and currentCheckpointCount is above 1.",
-      "Suggest keep_same if the plan appears appropriate.",
-      "Use a concise, friendly, formative-feedback tone. The message should support the participant and should not make them feel judged.",
-      "Do not mention behavioural metrics directly. Do not say things like 'you scrolled a lot', 'you paused for a long time', 'your probe response was slow', or name any metric.",
-      "If recommending more checkpoints, frame it around the text or reading support, for example that the previous text may have been complex and smaller sections could help.",
+      "Suggest keep_same if the plan appears appropriate. - Keep the tone concise, friendly, and formative. Support the participant and avoid sounding judgmental.",
+      "Do not mention behavioural metrics directly. Do not say things like “you scrolled a lot,” “you paused for a long time,” “your probe response was slow,” or name any metric.",
+      "Do not mention their response to the probe directly.",
+      "If recommending more checkpoints, frame it around the text or reading support, for example: the previous text may have been complex and smaller sections could help with managing progress.",
       "If recommending fewer checkpoints or keeping the same plan, give positive feedback that the current setup seems to be working well.",
-      "Frame recommendations as a choice or question; the participant must always decide.",
-      "Write the participant-facing message in the requested language.",
+      "Avoid confusing references between the previous text and the next text. Keep the feedback aligned with the recommendation for the next reading.",
+      "Frame the recommendation as a choice or question; the participant must always decide.",
+      "Write the participant-facing message in the required language.",
+      "Start the message with a brief acknowledgment of finishing the previous reading and the effort put into it.",
+      "The message should be 20–50 words.",
+      "Do not include participant identifiers.",
+      "Do not diagnose or label the participant.",
+      "Never explicitly say that chunking the text will reduce cognitive load or make it easier to follow the reading; instead, say that it will help with managing progress.",
+      "If you suggest to stay the same don't give the option to change checkpoints in the message as the app doesn´t have that option, just give positive feedback that the current setup seems to be working well.",
+      "Language should be simple to understand and not repetitive"
     ],
   };
 }
@@ -188,7 +201,7 @@ async function callOpenAI(prompt: unknown, schema: Record<string, unknown>, sche
         {
           role: "system",
           content:
-            "You are an adaptive reading support planner for a controlled research experiment. Return only data matching the provided schema. Do not include participant identifiers. Do not diagnose or label the participant.",
+            "You are a reading companion. Your job is to provide feedback to users according to their reading progress. This includes recommending the amount of checkpoints the reading should have (more if the text is dense and it seems like they need more support, less if the text is easy and it seems like they are concentrated). Your tone should be warm and friendly, but not gimmicky or overly loving. Your feedback should be formative, praising the effort and never making users feel judged. Following, self determination theory, you should make users feel autonomous and competent, but don't be paternalistic. Return only data matching the provided schema. Do not include participant identifiers. Do not diagnose or label the participant. Never explicitly say that chunking the text will reduce cognitive load or make it easier to follow the reading, instead say that it will help with managing progress",
         },
         {
           role: "user",

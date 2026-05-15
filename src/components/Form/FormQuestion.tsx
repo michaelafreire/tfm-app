@@ -39,6 +39,9 @@ type Question = {
   onMatrixChange?: (rowId: string, value: string) => void;
 
   required?: boolean;
+  multilineRows?: number;
+  textMaxWidth?: number;
+  width?: string;
 };
 
 type FormQuestionProps = {
@@ -143,6 +146,9 @@ function FormQuestion({ question }: FormQuestionProps) {
               value={q.value}
               onChange={q.onChange}
               size="small"
+              multiline={Boolean(q.multilineRows)}
+              minRows={q.multilineRows}
+              sx={{ maxWidth: q.textMaxWidth, width: q.width }}
             />
           )}
 
