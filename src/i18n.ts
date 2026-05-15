@@ -134,10 +134,10 @@ const resources = {
         calibrate: "Calibrate eye tracking",
         readingRounds: "Reading rounds",
         readQuestions: "Read + 4 questions",
-        threePassages: "3 passages",
+        threePassages: "2 passages",
         experienceQuestionnaire: "Experience questionnaire",
         experienceADescription:
-          "This experience involves eye tracking, so you will begin with a calibration using your cámara web. Then, you will complete 3 reading rounds. Each round has one passage and 4 comprehension questions. Afterwards, you will complete a brief questionnaire about your experience.",
+          "This experience involves eye tracking, so you will begin with a calibration using your cámara web. Then, you will complete 2 reading rounds. Each round has one passage and 4 comprehension questions. Afterwards, you will complete a brief questionnaire about your experience.",
         breakTitle: "5-minute break (optional)",
         breakLabel: "Break ",
         breakTimer: "Break timer",
@@ -146,7 +146,7 @@ const resources = {
         breakOver: "Break is over. Click next to start Experience B.",
         breakDescription: "Approx. 5 min",
         experienceBDescription:
-          "You will calibrate again. Then, complete 3 more reading rounds with 4 questions after each passage. You will then answer another brief questionnaire about your experience.",
+          "You will calibrate again. Then, complete 2 more reading rounds with 4 questions after each passage. You will then answer another brief questionnaire about your experience.",
         postTitle: "Post-experiment questionnaire",
         postDescription: "Answer a few final questions about your experience in the experiment.",
         important: "Important",
@@ -158,9 +158,9 @@ const resources = {
         titleA: "Reading Experience A",
         titleB: "Reading Experience B",
         introA:
-          "You will start with eye-tracking calibration, then complete 3 reading rounds and a brief questionnaire about this experience.",
+          "You will start with eye-tracking calibration, then complete 2 reading rounds and a brief questionnaire about this experience.",
         introB:
-          "You will calibrate again, then complete 3 reading rounds and a brief questionnaire about this experience.",
+          "You will calibrate again, then complete 2 reading rounds and a brief questionnaire about this experience.",
         startA: "Start Experience A",
         startB: "Start Experience B",
       },
@@ -200,7 +200,7 @@ This study examines how people interact with AI systems during reading comprehen
 ## What will you be asked to do?
 * Answer a few questions about yourself
 * Complete a 6-question adult ADHD self-report questionnaire
-* Complete two reading experiences consisting of reading three reading passages in each and answering four reading comprehension questions after each passage
+* Complete two reading experiences consisting of reading two reading passages in each and answering four reading comprehension questions after each passage
 * Complete brief questionnaires about your experience
 * Keep your head as still as possible during eye tracking calibration and reading experiences
 
@@ -395,10 +395,10 @@ By continuing, you confirm that you have read and understood the information abo
         calibrate: "Calibrar eye tracking",
         readingRounds: "Rondas de lectura",
         readQuestions: "Leer + 4 preguntas",
-        threePassages: "3 textos",
+        threePassages: "2 textos",
         experienceQuestionnaire: "Cuestionario de experiencia",
         experienceADescription:
-          "Esta experiencia incluye eye tracking, así que empezarás con una calibración usando tu cámara web. Después, completarás 3 rondas de lectura. Cada ronda tiene un texto y 4 preguntas de comprensión. Luego, completarás un breve cuestionario sobre tu experiencia.",
+          "Esta experiencia incluye eye tracking, así que empezarás con una calibración usando tu cámara web. Después, completarás 2 rondas de lectura. Cada ronda tiene un texto y 4 preguntas de comprensión. Luego, completarás un breve cuestionario sobre tu experiencia.",
         breakTitle: "Descanso de 5 minutos (opcional)",
         breakLabel: "Descanso",
         breakTimer: "Temporizador",
@@ -407,7 +407,7 @@ By continuing, you confirm that you have read and understood the information abo
         breakOver: "El descanso ha terminado. Haz clic en siguiente para empezar la Experiencia B.",
         breakDescription: "Aprox. 5 min",
         experienceBDescription:
-          "Calibrarás de nuevo. Después, completarás 3 rondas más de lectura con 4 preguntas después de cada texto. Luego, responderás otro breve cuestionario sobre tu experiencia.",
+          "Calibrarás de nuevo. Después, completarás 2 rondas más de lectura con 4 preguntas después de cada texto. Luego, responderás otro breve cuestionario sobre tu experiencia.",
         postTitle: "Cuestionario post-experimento",
         postDescription: "Responde unas preguntas finales sobre tu experiencia en el experimento.",
         important: "Importante",
@@ -419,9 +419,9 @@ By continuing, you confirm that you have read and understood the information abo
         titleA: "Experiencia de Lectura A",
         titleB: "Experiencia de Lectura B",
         introA:
-          "Empezarás con la calibración del eye tracking, después completarás 3 rondas de lectura y un breve cuestionario sobre esta experiencia.",
+          "Empezarás con la calibración del eye tracking, después completarás 2 rondas de lectura y un breve cuestionario sobre esta experiencia.",
         introB:
-          "Calibrarás de nuevo, después completarás 3 rondas de lectura y un breve cuestionario sobre esta experiencia.",
+          "Calibrarás de nuevo, después completarás 2 rondas de lectura y un breve cuestionario sobre esta experiencia.",
         startA: "Empezar experiencia A",
         startB: "Empezar experiencia B",
       },
@@ -461,7 +461,7 @@ Este estudio examina cómo las personas interactúan con sistemas de IA durante 
 ## ¿Qué se te pedirá que hagas?
 * Responder algunas preguntas sobre ti
 * Completar un cuestionario de autoinforme de 6 preguntas sobre TDAH en adultos
-* Completar dos experiencias de lectura que consisten en leer tres textos en cada una y responder cuatro preguntas de comprensión lectora después de cada texto
+* Completar dos experiencias de lectura que consisten en leer dos textos en cada una y responder cuatro preguntas de comprensión lectora después de cada texto
 * Completar cuestionarios breves sobre tu experiencia
 * Mantener la cabeza lo más quieta posible durante la calibración del eye tracking y las experiencias de lectura
 
@@ -657,10 +657,10 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         calibrate: "Calibrar eye tracking",
         readingRounds: "Rondes de lectura",
         readQuestions: "Llegir + 4 preguntes",
-        threePassages: "3 textos",
+        threePassages: "2 textos",
         experienceQuestionnaire: "Qüestionari d'experiència",
         experienceADescription:
-          "Aquesta experiència inclou eye tracking, així que començaràs amb una calibració utilitzant la teva càmera web. Després completaràs 3 rondes de lectura. Cada ronda té un text i 4 preguntes de comprensió. Després completaràs un breu qüestionari sobre la teva experiència.",
+          "Aquesta experiència inclou eye tracking, així que començaràs amb una calibració utilitzant la teva càmera web. Després completaràs 2 rondes de lectura. Cada ronda té un text i 4 preguntes de comprensió. Després completaràs un breu qüestionari sobre la teva experiència.",
         breakTitle: "Descans de 5 minuts (opcional)",
         breakLabel: "Descans",
         breakTimer: "Temporitzador",
@@ -669,7 +669,7 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         breakOver: "El descans ha acabat. Fes clic a següent per començar l'Experiència B.",
         breakDescription: "Aprox. 5 min",
         experienceBDescription:
-          "Calibraràs de nou. Després, completaràs 3 rondes més de lectura amb 4 preguntes després de cada text. Després respondràs un altre breu qüestionari sobre la teva experiència.",
+          "Calibraràs de nou. Després, completaràs 2 rondes més de lectura amb 4 preguntes després de cada text. Després respondràs un altre breu qüestionari sobre la teva experiència.",
         postTitle: "Qüestionari post-experiment",
         postDescription: "Respon unes preguntes finals sobre la teva experiència en l'experiment.",
         important: "Important",
@@ -681,9 +681,9 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         titleA: "Experiència de Lectura A",
         titleB: "Experiència de Lectura B",
         introA:
-          "Començaràs amb la calibració del eye tracking, després completaràs 3 rondes de lectura i un breu qüestionari sobre aquesta experiència.",
+          "Començaràs amb la calibració del eye tracking, després completaràs 2 rondes de lectura i un breu qüestionari sobre aquesta experiència.",
         introB:
-          "Calibraràs de nou, després completaràs 3 rondes de lectura i un breu qüestionari sobre aquesta experiència.",
+          "Calibraràs de nou, després completaràs 2 rondes de lectura i un breu qüestionari sobre aquesta experiència.",
         startA: "Començar experiència A",
         startB: "Començar experiència B",
       },
@@ -723,7 +723,7 @@ Aquest estudi examina com les persones interactuen amb sistemes d'IA durant tasq
 ## Què se't demanarà que facis?
 * Respondre algunes preguntes sobre tu
 * Completar un qüestionari d'autoinforme de 6 preguntes sobre TDAH en adults
-* Completar dues experiències de lectura que consisteixen a llegir tres textos en cadascuna i respondre quatre preguntes de comprensió lectora després de cada text
+* Completar dues experiències de lectura que consisteixen a llegir dos textos en cadascuna i respondre quatre preguntes de comprensió lectora després de cada text
 * Completar qüestionaris breus sobre la teva experiència
 * Mantenir el cap tan quiet com sigui possible durant la calibració del eye tracking i les experiències de lectura
 

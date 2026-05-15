@@ -34,8 +34,8 @@ type ReadingPlanInput = {
 
 type InitialPlanInput = {
   language?: string;
-  asrsPartAScore?: number;
-  asrsClassification?: string;
+  asrsPartAScore?: number | null;
+  asrsClassification?: string | null;
   readings: ReadingPlanInput[];
 };
 

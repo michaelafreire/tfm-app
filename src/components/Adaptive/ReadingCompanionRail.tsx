@@ -16,6 +16,7 @@ type ReadingCompanionRailProps = {
   message?: string;
   actionLabel?: string;
   onAction?: () => void;
+  onDismiss?: (reason: "dismissed" | "auto_dismissed") => void;
   isShining?: boolean;
   rewardCheckpointIndex?: number;
   isSleepy?: boolean;
@@ -31,6 +32,7 @@ function ReadingCompanionRail({
   message,
   actionLabel,
   onAction,
+  onDismiss,
   isShining = false,
   rewardCheckpointIndex,
   isSleepy = false,
@@ -69,6 +71,7 @@ function ReadingCompanionRail({
       const visibleSince = visibleSinceRef.current;
       if (!visibleSince) return;
       if (Date.now() - visibleSince < 10_000) return;
+      onDismiss?.("auto_dismissed");
       setDismissedBubbleKey(bubbleKey);
     };
 
@@ -76,7 +79,7 @@ function ReadingCompanionRail({
     return () => {
       window.removeEventListener("scroll", closeAfterSettledScroll, { capture: true });
     };
-  }, [bubbleKey, showBubble]);
+  }, [bubbleKey, onDismiss, showBubble]);
 
   return (
     <Box
@@ -181,7 +184,10 @@ function ReadingCompanionRail({
               message={message}
               actionLabel={actionLabel}
               onAction={onAction}
-              onDismiss={() => setDismissedBubbleKey(bubbleKey)}
+              onDismiss={() => {
+                onDismiss?.("dismissed");
+                setDismissedBubbleKey(bubbleKey);
+              }}
               theme={{ ...theme, accent: railColor }}
               compact
               pointerSide="right"

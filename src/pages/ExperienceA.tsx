@@ -32,6 +32,11 @@ import {
   type CheckpointPlacement,
 } from "../services/adaptiveAI";
 import {
+  logAdaptiveInteraction,
+  type AdaptiveInteractionAction,
+  type AdaptiveInteractionLogPayload,
+} from "../services/adaptiveInteractionLog";
+import {
   startTracking,
   pauseTracking,
   resumeTracking,
@@ -54,6 +59,7 @@ type CheckpointSuggestion = {
   message: string;
   actionLabel: string;
 } | null;
+type PendingAdaptiveInteraction = Omit<AdaptiveInteractionLogPayload, "participant_action" | "participant_action_at">;
 const GAZE_SAMPLE_INTERVAL_MS = 100;
 const CHECKPOINT_DIM_START_MS = 30_000;
 const CHECKPOINT_DIM_FULL_MS = 75_000;
@@ -146,12 +152,14 @@ function ExperienceA() {
   const stallTimerRef = useRef<number | null>(null);
   const probeTimerRef = useRef<number | null>(null);
   const probeTimerStepIdRef = useRef<string | null>(null);
+  const activeProbeStepIdRef = useRef<string | null>(null);
   const probeShownAtRef = useRef<number | null>(null);
   const lastScrollAtRef = useRef<Record<string, number>>({});
   const scheduledProbeStepIdsRef = useRef<Record<string, boolean>>({});
   const shineTimerRef = useRef<number | null>(null);
   const scrollStatsRef = useRef<Record<string, ScrollReadingStats>>({});
   const initialPlanRequestedRef = useRef(false);
+  const pendingAdaptiveInteractionsRef = useRef<Record<string, PendingAdaptiveInteraction>>({});
   const probeRecordsRef = useRef<Array<{
     stepId: string;
     scheduledAt: number;
@@ -205,8 +213,12 @@ function ExperienceA() {
     step: Step,
     direction: "more" | "less" | "same",
     message: string,
+    interaction?: PendingAdaptiveInteraction,
   ) => {
     if (!isAdaptive) return;
+    if (interaction) {
+      pendingAdaptiveInteractionsRef.current[step.id] = interaction;
+    }
 
     const currentCount = checkpointCountsByStep[step.id] ?? 3;
     if (direction === "same") {
@@ -247,10 +259,23 @@ function ExperienceA() {
     t,
   ]);
 
+  const completePendingAdaptiveInteraction = useCallback((stepId: string, action: AdaptiveInteractionAction) => {
+    const interaction = pendingAdaptiveInteractionsRef.current[stepId];
+    if (!interaction) return;
+
+    delete pendingAdaptiveInteractionsRef.current[stepId];
+    logAdaptiveInteraction({
+      ...interaction,
+      participant_action: action,
+      participant_action_at: new Date().toISOString(),
+    });
+  }, []);
+
   const applyCheckpointSuggestion = useCallback(() => {
     if (!checkpointSuggestion) return;
 
     const { stepId, direction } = checkpointSuggestion;
+    completePendingAdaptiveInteraction(stepId, "accepted");
     if (direction === "same") {
       setCheckpointSuggestion(null);
       setAiReadingNotesByStep((prev) => ({
@@ -276,7 +301,7 @@ function ExperienceA() {
         ? t("adaptive.doneAdded")
         : t("adaptive.doneReduced"),
     }));
-  }, [checkpointCountsByStep, checkpointSuggestion, t]);
+  }, [checkpointCountsByStep, checkpointSuggestion, completePendingAdaptiveInteraction, t]);
 
   const resetStallTimer = useCallback((step: Step) => {
     if (!isAdaptive || !isReadingStep(step) || completedReadingSteps[step.id]) return;
@@ -350,21 +375,39 @@ function ExperienceA() {
 
     initialPlanRequestedRef.current = true;
     setIsInitialPlanLoading(true);
-    void getInitialCheckpointPlan(
-      {
+    const initialPlanRequest = {
+        event: "initial_plan",
         language: routeState.language ?? i18n.language,
-        asrsPartAScore: routeState.asrsPartAScore,
-        asrsClassification: routeState.asrsClassification,
+        asrsPartAScore: routeState.asrsPartAScore ?? null,
+        asrsClassification: routeState.asrsClassification ?? null,
         readings: readingSteps.map((step) => ({
           stepId: step.id,
           label: step.label,
           text: step.description,
           questionCount: step.question.length,
         })),
-      },
+      };
+    void getInitialCheckpointPlan(
+      initialPlanRequest,
       localRecommendedCheckpointCount,
     ).then((plan) => {
       if (plan) {
+        logAdaptiveInteraction({
+          participant_code: participantCode,
+          group_number: groupNumber,
+          experience: "A",
+          phase: "experiencea",
+          interaction_type: "initial_plan",
+          source_step_id: null,
+          target_step_id: readingSteps[0]?.id ?? null,
+          request_payload: initialPlanRequest,
+          response_payload: plan,
+          response_source: plan.source,
+          recommendation: null,
+          message: plan.reason,
+          participant_action: "not_applicable",
+          participant_action_at: null,
+        });
         setAiRecommendedCheckpointCount(plan.recommendedCheckpoints);
         setAiRecommendationReason(plan.reason);
         setAiReadingNotesByStep((prev) => ({
@@ -393,6 +436,8 @@ function ExperienceA() {
     i18n.language,
     isAdaptive,
     localRecommendedCheckpointCount,
+    groupNumber,
+    participantCode,
     readingSteps,
     routeState.asrsClassification,
     routeState.asrsPartAScore,
@@ -474,7 +519,7 @@ function ExperienceA() {
       return;
     }
 
-    if (step.id === "1" || step.id === "5") {
+    if (!isReadingStep(step)) {
       pauseTracking();
       setActiveSectionId(null);
       return;
@@ -522,7 +567,9 @@ function ExperienceA() {
     scheduledProbeStepIds[step.id] = true;
     probeTimerStepIdRef.current = step.id;
     probeTimerRef.current = window.setTimeout(() => {
-      probeShownAtRef.current = Date.now();
+      const shownAt = Date.now();
+      activeProbeStepIdRef.current = step.id;
+      probeShownAtRef.current = shownAt;
       setActiveProbeStepId(step.id);
       setProbeOpen(true);
       probeTimerRef.current = null;
@@ -658,23 +705,33 @@ function ExperienceA() {
   ]);
 
   const handleProbeResponse = (response: ProbeResponse) => {
-    const step = steps[currentStep];
+    const stepId = activeProbeStepIdRef.current ?? activeProbeStepId ?? steps[currentStep]?.id;
     const shownAt = probeShownAtRef.current ?? Date.now();
     const answeredAt = Date.now();
 
     setProbeOpen(false);
     setActiveProbeStepId(null);
+    activeProbeStepIdRef.current = null;
+    probeShownAtRef.current = null;
 
-    if (step) {
-      const existingRecord = probeRecordsRef.current.find((record) => record.stepId === step.id);
+    if (stepId) {
+      const existingRecord = probeRecordsRef.current.find((record) => record.stepId === stepId);
       if (existingRecord) {
         existingRecord.shownAt = shownAt;
         existingRecord.answeredAt = answeredAt;
         existingRecord.response = response;
+      } else {
+        probeRecordsRef.current.push({
+          stepId,
+          scheduledAt: shownAt,
+          shownAt,
+          answeredAt,
+          response,
+        });
       }
 
       if (response !== "task-focused") {
-        setProbeAttentionWarningByStep((prev) => ({ ...prev, [step.id]: true }));
+        setProbeAttentionWarningByStep((prev) => ({ ...prev, [stepId]: true }));
       }
 
     }
@@ -711,6 +768,8 @@ function ExperienceA() {
   }, [currentStepCompleted, currentStepId, currentStepIsReading, isAdaptive, probeAttentionWarningByStep]);
 
   const handleCompleteReading = async (stepId: string) => {
+    completePendingAdaptiveInteraction(stepId, "ignored");
+
     const now = Date.now();
     const existing = readingTimingsRef.current[stepId];
     readingTimingsRef.current[stepId] = {
@@ -748,22 +807,37 @@ function ExperienceA() {
         ? Math.max(stats.maxTimeWithoutScrollMs, Date.now() - (lastScrollAtRef.current[stepId] ?? Date.now()))
         : null;
       const nextReadingStep = readingSteps.find((step) => Number(step.id) > Number(stepId));
-      const aiSuggestion = await getAfterReadingSuggestion({
+      const afterReadingRequest = {
         language: routeState.language ?? i18n.language,
         currentCheckpointCount: checkpointCountsByStep[stepId] ?? recommendedCheckpointCount,
         scrollDirectionChanges: stats?.directionChanges ?? 0,
         probeResponse,
         probeResponseTimeMs,
         longestNoScrollMs,
-      });
+      };
+      const aiSuggestion = await getAfterReadingSuggestion(afterReadingRequest);
 
       if (aiSuggestion && nextReadingStep) {
+        const interaction: PendingAdaptiveInteraction = {
+          participant_code: participantCode,
+          group_number: groupNumber,
+          experience: "A",
+          phase: "experiencea",
+          interaction_type: "after_reading",
+          source_step_id: stepId,
+          target_step_id: nextReadingStep.id,
+          request_payload: afterReadingRequest,
+          response_payload: aiSuggestion,
+          response_source: aiSuggestion.source,
+          recommendation: aiSuggestion.recommendation,
+          message: aiSuggestion.message,
+        };
         if (aiSuggestion.recommendation === "add_checkpoint") {
-          suggestCheckpointChange(nextReadingStep, "more", aiSuggestion.message);
+          suggestCheckpointChange(nextReadingStep, "more", aiSuggestion.message, interaction);
         } else if (aiSuggestion.recommendation === "reduce_checkpoints") {
-          suggestCheckpointChange(nextReadingStep, "less", aiSuggestion.message);
+          suggestCheckpointChange(nextReadingStep, "less", aiSuggestion.message, interaction);
         } else {
-          suggestCheckpointChange(nextReadingStep, "same", aiSuggestion.message);
+          suggestCheckpointChange(nextReadingStep, "same", aiSuggestion.message, interaction);
         }
         pauseTracking();
         setActiveSectionId(null);
@@ -783,11 +857,50 @@ function ExperienceA() {
           });
 
           if (backupSuggestion.direction === "more") {
-            suggestCheckpointChange(nextReadingStep, "more", backupSuggestion.message);
+            suggestCheckpointChange(nextReadingStep, "more", backupSuggestion.message, {
+              participant_code: participantCode,
+              group_number: groupNumber,
+              experience: "A",
+              phase: "experiencea",
+              interaction_type: "after_reading",
+              source_step_id: stepId,
+              target_step_id: nextReadingStep.id,
+              request_payload: afterReadingRequest,
+              response_payload: backupSuggestion,
+              response_source: "fallback",
+              recommendation: backupSuggestion.direction,
+              message: backupSuggestion.message,
+            });
           } else if (backupSuggestion.direction === "less") {
-            suggestCheckpointChange(nextReadingStep, "less", backupSuggestion.message);
+            suggestCheckpointChange(nextReadingStep, "less", backupSuggestion.message, {
+              participant_code: participantCode,
+              group_number: groupNumber,
+              experience: "A",
+              phase: "experiencea",
+              interaction_type: "after_reading",
+              source_step_id: stepId,
+              target_step_id: nextReadingStep.id,
+              request_payload: afterReadingRequest,
+              response_payload: backupSuggestion,
+              response_source: "fallback",
+              recommendation: backupSuggestion.direction,
+              message: backupSuggestion.message,
+            });
           } else {
-            suggestCheckpointChange(nextReadingStep, "same", backupSuggestion.message);
+            suggestCheckpointChange(nextReadingStep, "same", backupSuggestion.message, {
+              participant_code: participantCode,
+              group_number: groupNumber,
+              experience: "A",
+              phase: "experiencea",
+              interaction_type: "after_reading",
+              source_step_id: stepId,
+              target_step_id: nextReadingStep.id,
+              request_payload: afterReadingRequest,
+              response_payload: backupSuggestion,
+              response_source: "fallback",
+              recommendation: backupSuggestion.direction,
+              message: backupSuggestion.message,
+            });
           }
         }
       }
@@ -822,6 +935,15 @@ function ExperienceA() {
         record.shownAt && record.answeredAt ? record.answeredAt - record.shownAt : null,
       ])
     ) as Record<string, number | null>;
+    const probeColumns = Object.fromEntries(
+      readingSteps.flatMap((step, index) => {
+        const readingNumber = index + 1;
+        return [
+          [`e1_r${readingNumber}_p`, probeAnswerByStepId[step.id] ?? null],
+          [`e1_r${readingNumber}_p_time`, probeResponseTimeByStepId[step.id] ?? null],
+        ];
+      })
+    );
 
     return supabase.from("responses").insert([
       {
@@ -831,12 +953,7 @@ function ExperienceA() {
         calibration_experience: routeState.calibrationExperience ?? "A",
         calibration_accuracy_percent: routeState.calibrationAccuracyPercent ?? null,
         calibration_average_error_px: routeState.calibrationAverageErrorPx ?? null,
-        e1_r1_p: probeAnswerByStepId["2"] ?? null,
-        e1_r2_p: probeAnswerByStepId["3"] ?? null,
-        e1_r3_p: probeAnswerByStepId["4"] ?? null,
-        e1_r1_p_time: probeResponseTimeByStepId["2"] ?? null,
-        e1_r2_p_time: probeResponseTimeByStepId["3"] ?? null,
-        e1_r3_p_time: probeResponseTimeByStepId["4"] ?? null,
+        ...probeColumns,
         ...answerColumns
       }
     ]);
@@ -871,7 +988,7 @@ function ExperienceA() {
         return;
       }
 
-      const readingStepIds = ["2", "3", "4"];
+      const readingStepIds = readingSteps.map((step) => step.id);
 
       const perReadingRows = readingStepIds.map((stepId) => {
         const stepData = rawData.filter((point) => point.sectionId === stepId);
@@ -1124,6 +1241,7 @@ function ExperienceA() {
               message={aiReadingNotesByStep[currentStepId]}
               actionLabel={checkpointSuggestion?.stepId === currentStepId ? checkpointSuggestion.actionLabel : undefined}
               onAction={checkpointSuggestion?.stepId === currentStepId ? applyCheckpointSuggestion : undefined}
+              onDismiss={(reason) => completePendingAdaptiveInteraction(currentStepId, reason)}
               isShining={shiningCheckpoint?.stepId === currentStepId}
               rewardCheckpointIndex={shiningCheckpoint?.stepId === currentStepId ? shiningCheckpoint.checkpointIndex : undefined}
               isSleepy={sleepyCompanionByStep[currentStepId] === true}

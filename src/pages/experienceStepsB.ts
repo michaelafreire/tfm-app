@@ -40,7 +40,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Experience B. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
+      description: 'This is Reading Experience B. In the following section, you will read two passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing both passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
       question: []
     },
     {
@@ -161,63 +161,63 @@ export const stepsByGroup: Record<number, Step[]> = {
         },
       ]
     },
+    // {
+    //   id: '4',
+    //   label: 'Life on Mars',
+    //   description: `
+    //   A new study published in the journal Science shows definitive evidence of organic matter on the surface of Mars. The data was collected by NASA's nuclear-powered rover Curiosity. It confirms earlier findings that the Red Planet once contained carbon-based compounds. These compounds – also called organic molecules – are essential ingredients for life as scientists understand it.
+
+    //   The organic molecules were found in Mars's Gale Crater, a large area that may have been a watery lake over three billion years ago. The rover encountered traces of the molecule in rocks extracted from the area. The rocks also contain sulfur, which scientists speculate helped preserve the organics even when the rocks were exposed to the harsh radiation on the surface of the planet.
+
+    //   Scientists are quick to state that the presence of these organic molecules is not sufficient evidence for ancient life on Mars, as the molecules could have been formed by non-living processes. But it's still one of the most astonishing discoveries, which could lead to future revelations. Especially when one considers the other startling find that Curiosity uncovered around five years ago.
+
+    //   The rover analyses the air around it periodically, and in 2014 it found the air contained another of the most basic organic molecules and a key ingredient of natural gas: methane. One of the characteristics of methane is that it only survives a few hundred years. This means that something, somewhere on Mars, is replenishing the supply. According to NASA, Mars emits thousands of tons of methane at a time. The level of methane rises and falls at seasonal intervals in the year, almost as if the planet is breathing it.
+
+    //   NASA suspects the methane comes from deep under the surface of the planet. The variations in temperature on the surface of Mars cause the molecule to flow upwards at higher or lower levels. For example, in the Martian winter the gas could get trapped in underground icy crystals. These crystals, called clathrates, melt in the summer and release the gas. However, the source of the methane is still a complete mystery.
+
+    //   The world of astrobiology considers both of these studies as historical milestones. According to this information, Mars is not a dead planet. On the contrary, it is quite active and may be changing and becoming more habitable.
+
+    //   Of course, this means further research is necessary. Scientists say they need to send new equipment to Mars, equipment that can measure the air and soil with more precision. There are already missions underway. The European Space Agency's ExoMars ship lands in 2020 and will be able to drill into the ground on Mars to analyse what it finds. Additionally, NASA is sending another Mars Rover in the same year to collect samples of Martian soil and return them to Earth.
+
+    //   The possibility of life on Mars has fascinated humans for generations. It has been the subject of endless science-fiction novels and films. Are we alone in the universe or have there been other life forms within our Solar System? If the current missions to the Red Planet continue, it looks as if we may discover the answer very soon.
+    // `,
+    //   question: [
+    //     {
+    //       id: 'E2_R3_Q1',
+    //       label: `
+    //       <strong>Answer the following questions:</strong>
+
+    //       1. The study in the journal 'Science' was written by NASA scientists.
+    //       `,
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q2',
+    //       label: '2. This is not the first study to suggest that life existed on Mars in the past.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q3',
+    //       label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q4',
+    //       label: '4. It is believed that this conclusively proves that there was once life on the planet.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     }
+    //   ]
+    // },
     {
       id: '4',
-      label: 'Life on Mars',
-      description: `
-      A new study published in the journal Science shows definitive evidence of organic matter on the surface of Mars. The data was collected by NASA's nuclear-powered rover Curiosity. It confirms earlier findings that the Red Planet once contained carbon-based compounds. These compounds – also called organic molecules – are essential ingredients for life as scientists understand it.
-
-      The organic molecules were found in Mars's Gale Crater, a large area that may have been a watery lake over three billion years ago. The rover encountered traces of the molecule in rocks extracted from the area. The rocks also contain sulfur, which scientists speculate helped preserve the organics even when the rocks were exposed to the harsh radiation on the surface of the planet.
-
-      Scientists are quick to state that the presence of these organic molecules is not sufficient evidence for ancient life on Mars, as the molecules could have been formed by non-living processes. But it's still one of the most astonishing discoveries, which could lead to future revelations. Especially when one considers the other startling find that Curiosity uncovered around five years ago.
-
-      The rover analyses the air around it periodically, and in 2014 it found the air contained another of the most basic organic molecules and a key ingredient of natural gas: methane. One of the characteristics of methane is that it only survives a few hundred years. This means that something, somewhere on Mars, is replenishing the supply. According to NASA, Mars emits thousands of tons of methane at a time. The level of methane rises and falls at seasonal intervals in the year, almost as if the planet is breathing it.
-
-      NASA suspects the methane comes from deep under the surface of the planet. The variations in temperature on the surface of Mars cause the molecule to flow upwards at higher or lower levels. For example, in the Martian winter the gas could get trapped in underground icy crystals. These crystals, called clathrates, melt in the summer and release the gas. However, the source of the methane is still a complete mystery.
-
-      The world of astrobiology considers both of these studies as historical milestones. According to this information, Mars is not a dead planet. On the contrary, it is quite active and may be changing and becoming more habitable.
-
-      Of course, this means further research is necessary. Scientists say they need to send new equipment to Mars, equipment that can measure the air and soil with more precision. There are already missions underway. The European Space Agency's ExoMars ship lands in 2020 and will be able to drill into the ground on Mars to analyse what it finds. Additionally, NASA is sending another Mars Rover in the same year to collect samples of Martian soil and return them to Earth.
-
-      The possibility of life on Mars has fascinated humans for generations. It has been the subject of endless science-fiction novels and films. Are we alone in the universe or have there been other life forms within our Solar System? If the current missions to the Red Planet continue, it looks as if we may discover the answer very soon.
-    `,
-      question: [
-        {
-          id: 'E2_R3_Q1',
-          label: `
-          <strong>Answer the following questions:</strong>
-
-          1. The study in the journal 'Science' was written by NASA scientists.
-          `,
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q2',
-          label: '2. This is not the first study to suggest that life existed on Mars in the past.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q3',
-          label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q4',
-          label: '4. It is believed that this conclusively proves that there was once life on the planet.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        }
-      ]
-    },
-    {
-      id: '5',
       label: 'IMI Questions',
       description: ``,
       question: [
@@ -246,7 +246,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Experience B. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
+      description: 'This is Reading Experience B. In the following section, you will read two passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing both passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
       question: []
     },
     {
@@ -367,62 +367,62 @@ export const stepsByGroup: Record<number, Step[]> = {
         },
       ]
     },
+    // {
+    //   id: '4',
+    //   label: 'Life on Mars',
+    //   description: `
+    //   A new study published in the journal Science shows definitive evidence of organic matter on the surface of Mars. The data was collected by NASA's nuclear-powered rover Curiosity. It confirms earlier findings that the Red Planet once contained carbon-based compounds. These compounds – also called organic molecules – are essential ingredients for life as scientists understand it.
+
+    //   The organic molecules were found in Mars's Gale Crater, a large area that may have been a watery lake over three billion years ago. The rover encountered traces of the molecule in rocks extracted from the area. The rocks also contain sulfur, which scientists speculate helped preserve the organics even when the rocks were exposed to the harsh radiation on the surface of the planet.
+
+    //   Scientists are quick to state that the presence of these organic molecules is not sufficient evidence for ancient life on Mars, as the molecules could have been formed by non-living processes. But it's still one of the most astonishing discoveries, which could lead to future revelations. Especially when one considers the other startling find that Curiosity uncovered around five years ago.
+
+    //   The rover analyses the air around it periodically, and in 2014 it found the air contained another of the most basic organic molecules and a key ingredient of natural gas: methane. One of the characteristics of methane is that it only survives a few hundred years. This means that something, somewhere on Mars, is replenishing the supply. According to NASA, Mars emits thousands of tons of methane at a time. The level of methane rises and falls at seasonal intervals in the year, almost as if the planet is breathing it.
+
+    //   NASA suspects the methane comes from deep under the surface of the planet. The variations in temperature on the surface of Mars cause the molecule to flow upwards at higher or lower levels. For example, in the Martian winter the gas could get trapped in underground icy crystals. These crystals, called clathrates, melt in the summer and release the gas. However, the source of the methane is still a complete mystery.
+
+    //   The world of astrobiology considers both of these studies as historical milestones. According to this information, Mars is not a dead planet. On the contrary, it is quite active and may be changing and becoming more habitable.
+
+    //   Of course, this means further research is necessary. Scientists say they need to send new equipment to Mars, equipment that can measure the air and soil with more precision. There are already missions underway. The European Space Agency's ExoMars ship lands in 2020 and will be able to drill into the ground on Mars to analyse what it finds. Additionally, NASA is sending another Mars Rover in the same year to collect samples of Martian soil and return them to Earth.
+
+    //   The possibility of life on Mars has fascinated humans for generations. It has been the subject of endless science-fiction novels and films. Are we alone in the universe or have there been other life forms within our Solar System? If the current missions to the Red Planet continue, it looks as if we may discover the answer very soon.
+    // `,
+    //   question: [
+    //     {
+    //       id: 'E2_R3_Q1',
+    //       label: `
+    //       <strong>Answer the following questions:</strong>
+
+    //       1. The study in the journal 'Science' was written by NASA scientists.`,
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q2',
+    //       label: '2. This is not the first study to suggest that life existed on Mars in the past.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q3',
+    //       label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q4',
+    //       label: '4. It is believed that this conclusively proves that there was once life on the planet.',
+    //       type: 'multiple-choice',
+    //       choice: ["True", "False", "Not Given"],
+    //       required: true
+    //     }
+    //   ]
+    // },
     {
       id: '4',
-      label: 'Life on Mars',
-      description: `
-      A new study published in the journal Science shows definitive evidence of organic matter on the surface of Mars. The data was collected by NASA's nuclear-powered rover Curiosity. It confirms earlier findings that the Red Planet once contained carbon-based compounds. These compounds – also called organic molecules – are essential ingredients for life as scientists understand it.
-
-      The organic molecules were found in Mars's Gale Crater, a large area that may have been a watery lake over three billion years ago. The rover encountered traces of the molecule in rocks extracted from the area. The rocks also contain sulfur, which scientists speculate helped preserve the organics even when the rocks were exposed to the harsh radiation on the surface of the planet.
-
-      Scientists are quick to state that the presence of these organic molecules is not sufficient evidence for ancient life on Mars, as the molecules could have been formed by non-living processes. But it's still one of the most astonishing discoveries, which could lead to future revelations. Especially when one considers the other startling find that Curiosity uncovered around five years ago.
-
-      The rover analyses the air around it periodically, and in 2014 it found the air contained another of the most basic organic molecules and a key ingredient of natural gas: methane. One of the characteristics of methane is that it only survives a few hundred years. This means that something, somewhere on Mars, is replenishing the supply. According to NASA, Mars emits thousands of tons of methane at a time. The level of methane rises and falls at seasonal intervals in the year, almost as if the planet is breathing it.
-
-      NASA suspects the methane comes from deep under the surface of the planet. The variations in temperature on the surface of Mars cause the molecule to flow upwards at higher or lower levels. For example, in the Martian winter the gas could get trapped in underground icy crystals. These crystals, called clathrates, melt in the summer and release the gas. However, the source of the methane is still a complete mystery.
-
-      The world of astrobiology considers both of these studies as historical milestones. According to this information, Mars is not a dead planet. On the contrary, it is quite active and may be changing and becoming more habitable.
-
-      Of course, this means further research is necessary. Scientists say they need to send new equipment to Mars, equipment that can measure the air and soil with more precision. There are already missions underway. The European Space Agency's ExoMars ship lands in 2020 and will be able to drill into the ground on Mars to analyse what it finds. Additionally, NASA is sending another Mars Rover in the same year to collect samples of Martian soil and return them to Earth.
-
-      The possibility of life on Mars has fascinated humans for generations. It has been the subject of endless science-fiction novels and films. Are we alone in the universe or have there been other life forms within our Solar System? If the current missions to the Red Planet continue, it looks as if we may discover the answer very soon.
-    `,
-      question: [
-        {
-          id: 'E2_R3_Q1',
-          label: `
-          <strong>Answer the following questions:</strong>
-
-          1. The study in the journal 'Science' was written by NASA scientists.`,
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q2',
-          label: '2. This is not the first study to suggest that life existed on Mars in the past.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q3',
-          label: '3. A scientific vehicle found very small elements of an organic molecule within water extracted from the planet.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q4',
-          label: '4. It is believed that this conclusively proves that there was once life on the planet.',
-          type: 'multiple-choice',
-          choice: ["True", "False", "Not Given"],
-          required: true
-        }
-      ]
-    },
-    {
-      id: '5',
       label: 'IMI Questions',
       description: `
       `,
@@ -452,7 +452,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Experience B. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
+      description: 'This is Reading Experience B. In the following section, you will read two passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing both passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
       question: []
     },
     {
@@ -585,63 +585,63 @@ export const stepsByGroup: Record<number, Step[]> = {
         },
       ]
     },
+    // {
+    //   id: '4',
+    //   label: 'The state of the world',
+    //   description: `
+    //   If your view of the world comes from watching the news and reading newspapers, you could be forgiven for lying awake at night worrying about the future. Apparently, rising violence and population rates mean humans are both killing each other in ever larger numbers and being born at rates the world's resources can't sustain. To make matters worse, all the wealth is concentrated on a handful of people in the world's richest countries. People in low-income countries live in poverty while the West gets richer. Depressing, isn't it?
+
+    //   But do the statistics support our negative world view or is the world actually improving?
+
+    //   Let's take global population first. It's around 7 billion now, in line with figures predicted by the UN in 1958. By the year 2100, the same experts predict it will be around 11 billion. But did you know that 11 billion is probably as high as that number will get? The rate of increase will slow down in the second half of this century thanks to falling birth rates today.
+
+    //   Falling birth rates? Yes, that's right.
+
+    //   In the last two centuries, improvements in technology and health meant fewer children died young, fuelling rapid population growth. These large families produced even more children who survived into adulthood and had their own children. But with the wider availability of contraception in the 1960s, the global average number of babies per woman has declined from six babies per woman to as low as two.
+
+    //   The biggest factor in child mortality is poverty. And while it's still true that only 20 per cent of the world takes about 74 per cent of the world's income, 60 per cent of the world now falls into a middle-income group, with 11.6 per cent – the smallest amount of people in history – still living in conditions of extreme poverty. If the majority of the world's people have money, international aid could realistically achieve the UN target of eradicating poverty by 2030. As poverty goes down, life expectancy goes up, birth rates go down because parents can expect their existing children to survive, and the global population stabilises.
+
+    //   As for news stories that make us think the world is an increasingly violent place, there is cause for some optimism too. Between the end of World War II and 1990, there were 30 wars that killed more than 100,000 people. Today there are still civil wars, but countries are mostly co-existing more peacefully than in the past. However, terrorism has shot up in the last few years and, since World War II, wars have killed many more civilians than soldiers. Even for civilians, though, the statistics are not all bad. Although deaths are nine times more likely to be a result of violent crime than political conflict, the global murder rate fell slightly, from 8 per 100,000 people in 2000 to about 5.3 in 2015.
+
+    //   Of course, none of this means the world is perfect, and whether you personally are affected by war and poverty is often down to the lottery of where you're born. Also, we still face huge problems of our own making, particularly environmental ones like global warming, and wealth and natural resources need to be distributed more fairly. But not all the news is bad news, whatever the TV and newspapers might say.
+    //   `,
+    //   question: [
+    //     {
+    //       id: 'E2_R3_Q1',
+    //       label: `
+    //       <strong>Answer the following questions:</strong>
+
+    //       1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
+    //       `,
+    //       type: 'multiple-choice',
+    //       choice: ["The rise is obviously true", "The rise seems true but evidence might show it isn't", "The rise seems false but evidence might show it's true"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q2',
+    //       label: '2. Which statement about population levels is correct?',
+    //       type: 'multiple-choice',
+    //       choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q3',
+    //       label: '3. Which factor does NOT cause the birth rate to fall?',
+    //       type: 'multiple-choice',
+    //       choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q4',
+    //       label: "4. One of the UN's targets for 2030 is to ...",
+    //       type: 'multiple-choice',
+    //       choice: ["end poverty", "increase life expectancy", "make population levels stable"],
+    //       required: true
+    //     },
+    //   ]
+    // },
     {
       id: '4',
-      label: 'The state of the world',
-      description: `
-      If your view of the world comes from watching the news and reading newspapers, you could be forgiven for lying awake at night worrying about the future. Apparently, rising violence and population rates mean humans are both killing each other in ever larger numbers and being born at rates the world's resources can't sustain. To make matters worse, all the wealth is concentrated on a handful of people in the world's richest countries. People in low-income countries live in poverty while the West gets richer. Depressing, isn't it?
-
-      But do the statistics support our negative world view or is the world actually improving?
-
-      Let's take global population first. It's around 7 billion now, in line with figures predicted by the UN in 1958. By the year 2100, the same experts predict it will be around 11 billion. But did you know that 11 billion is probably as high as that number will get? The rate of increase will slow down in the second half of this century thanks to falling birth rates today.
-
-      Falling birth rates? Yes, that's right.
-
-      In the last two centuries, improvements in technology and health meant fewer children died young, fuelling rapid population growth. These large families produced even more children who survived into adulthood and had their own children. But with the wider availability of contraception in the 1960s, the global average number of babies per woman has declined from six babies per woman to as low as two.
-
-      The biggest factor in child mortality is poverty. And while it's still true that only 20 per cent of the world takes about 74 per cent of the world's income, 60 per cent of the world now falls into a middle-income group, with 11.6 per cent – the smallest amount of people in history – still living in conditions of extreme poverty. If the majority of the world's people have money, international aid could realistically achieve the UN target of eradicating poverty by 2030. As poverty goes down, life expectancy goes up, birth rates go down because parents can expect their existing children to survive, and the global population stabilises.
-
-      As for news stories that make us think the world is an increasingly violent place, there is cause for some optimism too. Between the end of World War II and 1990, there were 30 wars that killed more than 100,000 people. Today there are still civil wars, but countries are mostly co-existing more peacefully than in the past. However, terrorism has shot up in the last few years and, since World War II, wars have killed many more civilians than soldiers. Even for civilians, though, the statistics are not all bad. Although deaths are nine times more likely to be a result of violent crime than political conflict, the global murder rate fell slightly, from 8 per 100,000 people in 2000 to about 5.3 in 2015.
-
-      Of course, none of this means the world is perfect, and whether you personally are affected by war and poverty is often down to the lottery of where you're born. Also, we still face huge problems of our own making, particularly environmental ones like global warming, and wealth and natural resources need to be distributed more fairly. But not all the news is bad news, whatever the TV and newspapers might say.
-      `,
-      question: [
-        {
-          id: 'E2_R3_Q1',
-          label: `
-          <strong>Answer the following questions:</strong>
-
-          1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
-          `,
-          type: 'multiple-choice',
-          choice: ["The rise is obviously true", "The rise seems true but evidence might show it isn't", "The rise seems false but evidence might show it's true"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q2',
-          label: '2. Which statement about population levels is correct?',
-          type: 'multiple-choice',
-          choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q3',
-          label: '3. Which factor does NOT cause the birth rate to fall?',
-          type: 'multiple-choice',
-          choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q4',
-          label: "4. One of the UN's targets for 2030 is to ...",
-          type: 'multiple-choice',
-          choice: ["end poverty", "increase life expectancy", "make population levels stable"],
-          required: true
-        },
-      ]
-    },
-    {
-      id: '5',
       label: 'IMI Questions',
       description: `
       `,
@@ -671,7 +671,7 @@ export const stepsByGroup: Record<number, Step[]> = {
     {
       id: '1',
       label: 'Instructions',
-      description: 'This is Reading Experience B. In the following section, you will read three passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing all three passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
+      description: 'This is Reading Experience B. In the following section, you will read two passages. Read each passage until you feel ready to answer the comprehension questions, then mark the passage as complete. Once a passage is marked complete, you will no longer be able to view it and will proceed directly to four questions about the text. After finishing both passages, you will answer a brief questionnaire about your experience in Reading Experience B.',
       question: []
     },
     {
@@ -804,63 +804,63 @@ export const stepsByGroup: Record<number, Step[]> = {
         },
       ]
     },
+    // {
+    //   id: '4',
+    //   label: 'The state of the world',
+    //   description: `
+    //   If your view of the world comes from watching the news and reading newspapers, you could be forgiven for lying awake at night worrying about the future. Apparently, rising violence and population rates mean humans are both killing each other in ever larger numbers and being born at rates the world's resources can't sustain. To make matters worse, all the wealth is concentrated on a handful of people in the world's richest countries. People in low-income countries live in poverty while the West gets richer. Depressing, isn't it?
+
+    //   But do the statistics support our negative world view or is the world actually improving?
+
+    //   Let's take global population first. It's around 7 billion now, in line with figures predicted by the UN in 1958. By the year 2100, the same experts predict it will be around 11 billion. But did you know that 11 billion is probably as high as that number will get? The rate of increase will slow down in the second half of this century thanks to falling birth rates today.
+
+    //   Falling birth rates? Yes, that's right.
+
+    //   In the last two centuries, improvements in technology and health meant fewer children died young, fuelling rapid population growth. These large families produced even more children who survived into adulthood and had their own children. But with the wider availability of contraception in the 1960s, the global average number of babies per woman has declined from six babies per woman to as low as two.
+
+    //   The biggest factor in child mortality is poverty. And while it's still true that only 20 per cent of the world takes about 74 per cent of the world's income, 60 per cent of the world now falls into a middle-income group, with 11.6 per cent – the smallest amount of people in history – still living in conditions of extreme poverty. If the majority of the world's people have money, international aid could realistically achieve the UN target of eradicating poverty by 2030. As poverty goes down, life expectancy goes up, birth rates go down because parents can expect their existing children to survive, and the global population stabilises.
+
+    //   As for news stories that make us think the world is an increasingly violent place, there is cause for some optimism too. Between the end of World War II and 1990, there were 30 wars that killed more than 100,000 people. Today there are still civil wars, but countries are mostly co-existing more peacefully than in the past. However, terrorism has shot up in the last few years and, since World War II, wars have killed many more civilians than soldiers. Even for civilians, though, the statistics are not all bad. Although deaths are nine times more likely to be a result of violent crime than political conflict, the global murder rate fell slightly, from 8 per 100,000 people in 2000 to about 5.3 in 2015.
+
+    //   Of course, none of this means the world is perfect, and whether you personally are affected by war and poverty is often down to the lottery of where you're born. Also, we still face huge problems of our own making, particularly environmental ones like global warming, and wealth and natural resources need to be distributed more fairly. But not all the news is bad news, whatever the TV and newspapers might say.
+    //   `,
+    //   question: [
+    //     {
+    //       id: 'E2_R3_Q1',
+    //       label: `
+    //       <strong>Answer the following questions:</strong>
+
+    //       1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
+    //       `,
+    //       type: 'multiple-choice',
+    //       choice: ["The rise is obviously true", "The rise seems true but evidence might show it isn't", "The rise seems false but evidence might show it's true"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q2',
+    //       label: '2. Which statement about population levels is correct?',
+    //       type: 'multiple-choice',
+    //       choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q3',
+    //       label: '3. Which factor does NOT cause the birth rate to fall?',
+    //       type: 'multiple-choice',
+    //       choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
+    //       required: true
+    //     },
+    //     {
+    //       id: 'E2_R3_Q4',
+    //       label: "4. One of the UN's targets for 2030 is to ...",
+    //       type: 'multiple-choice',
+    //       choice: ["end poverty", "increase life expectancy", "make population levels stable"],
+    //       required: true
+    //     },
+    //   ]
+    // },
     {
       id: '4',
-      label: 'The state of the world',
-      description: `
-      If your view of the world comes from watching the news and reading newspapers, you could be forgiven for lying awake at night worrying about the future. Apparently, rising violence and population rates mean humans are both killing each other in ever larger numbers and being born at rates the world's resources can't sustain. To make matters worse, all the wealth is concentrated on a handful of people in the world's richest countries. People in low-income countries live in poverty while the West gets richer. Depressing, isn't it?
-
-      But do the statistics support our negative world view or is the world actually improving?
-
-      Let's take global population first. It's around 7 billion now, in line with figures predicted by the UN in 1958. By the year 2100, the same experts predict it will be around 11 billion. But did you know that 11 billion is probably as high as that number will get? The rate of increase will slow down in the second half of this century thanks to falling birth rates today.
-
-      Falling birth rates? Yes, that's right.
-
-      In the last two centuries, improvements in technology and health meant fewer children died young, fuelling rapid population growth. These large families produced even more children who survived into adulthood and had their own children. But with the wider availability of contraception in the 1960s, the global average number of babies per woman has declined from six babies per woman to as low as two.
-
-      The biggest factor in child mortality is poverty. And while it's still true that only 20 per cent of the world takes about 74 per cent of the world's income, 60 per cent of the world now falls into a middle-income group, with 11.6 per cent – the smallest amount of people in history – still living in conditions of extreme poverty. If the majority of the world's people have money, international aid could realistically achieve the UN target of eradicating poverty by 2030. As poverty goes down, life expectancy goes up, birth rates go down because parents can expect their existing children to survive, and the global population stabilises.
-
-      As for news stories that make us think the world is an increasingly violent place, there is cause for some optimism too. Between the end of World War II and 1990, there were 30 wars that killed more than 100,000 people. Today there are still civil wars, but countries are mostly co-existing more peacefully than in the past. However, terrorism has shot up in the last few years and, since World War II, wars have killed many more civilians than soldiers. Even for civilians, though, the statistics are not all bad. Although deaths are nine times more likely to be a result of violent crime than political conflict, the global murder rate fell slightly, from 8 per 100,000 people in 2000 to about 5.3 in 2015.
-
-      Of course, none of this means the world is perfect, and whether you personally are affected by war and poverty is often down to the lottery of where you're born. Also, we still face huge problems of our own making, particularly environmental ones like global warming, and wealth and natural resources need to be distributed more fairly. But not all the news is bad news, whatever the TV and newspapers might say.
-      `,
-      question: [
-        {
-          id: 'E2_R3_Q1',
-          label: `
-          <strong>Answer the following questions:</strong>
-
-          1. What does the word 'apparently' in the first paragraph tell us about the rise in violence we see in the news?
-          `,
-          type: 'multiple-choice',
-          choice: ["The rise is obviously true", "The rise seems true but evidence might show it isn't", "The rise seems false but evidence might show it's true"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q2',
-          label: '2. Which statement about population levels is correct?',
-          type: 'multiple-choice',
-          choice: ["About two hundred years ago, the child mortality rate started to drop significantly", "The rate is growing steadily now", "The rate will start to drop in the year 2100"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q3',
-          label: '3. Which factor does NOT cause the birth rate to fall?',
-          type: 'multiple-choice',
-          choice: ["Improvements in healthcare", "The availability of contraception", "Poverty"],
-          required: true
-        },
-        {
-          id: 'E2_R3_Q4',
-          label: "4. One of the UN's targets for 2030 is to ...",
-          type: 'multiple-choice',
-          choice: ["end poverty", "increase life expectancy", "make population levels stable"],
-          required: true
-        },
-      ]
-    },
-    {
-      id: '5',
       label: 'IMI Questions',
       description: `
       `,

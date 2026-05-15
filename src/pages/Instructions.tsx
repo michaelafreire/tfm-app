@@ -98,7 +98,7 @@ function ReadingRoundIcon() {
           boxShadow: 1,
         }}
       >
-        x3
+        x2
       </Box>
     </Box>
   );
