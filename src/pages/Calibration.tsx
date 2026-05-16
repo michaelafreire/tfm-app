@@ -294,8 +294,12 @@ function Calibration() {
   const clicksOnActivePoint =
     isComplete ? CLICKS_PER_POINT : (clickCount % CLICKS_PER_POINT);
   const topMessage = accuracy
-    ? `${t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })}${
-      accuracy.accuracyPercent < 85 ? ` ${t("calibration.recalibrateSuggestion")}` : ""
+    ? `${t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })} ${
+      t(
+        accuracy.accuracyPercent < 85
+          ? "calibration.recalibrateSuggestion"
+          : "calibration.continueSuggestion"
+      )
     }`
     : isScoring
       ? t("calibration.keepEyesFixed")
