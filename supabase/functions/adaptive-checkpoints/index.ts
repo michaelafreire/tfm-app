@@ -14,6 +14,7 @@ type InitialPlanRequest = {
 type AfterReadingRequest = {
   event: "after_reading";
   language?: string;
+  companionName?: string;
   currentCheckpointCount: number;
   scrollDirectionChanges: number;
   probeResponse?: string;
@@ -93,6 +94,7 @@ function buildSuggestionPrompt(input: AfterReadingRequest) {
       "Suggest whether to adjust checkpoint frequency for the next reading in a reading-comprehension experiment. The participant must always decide whether to apply the change.",
     event: input.event,
     language: input.language ?? "en",
+    companionName: input.companionName ?? null,
     currentCheckpointCount: input.currentCheckpointCount,
     scrollDirectionChanges: input.scrollDirectionChanges,
     probeResponse: input.probeResponse ?? null,

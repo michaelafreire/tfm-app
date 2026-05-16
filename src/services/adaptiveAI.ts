@@ -41,6 +41,7 @@ type InitialPlanInput = {
 
 type AfterReadingInput = {
   language?: string;
+  companionName?: string;
   currentCheckpointCount: number;
   scrollDirectionChanges: number;
   probeResponse?: string;

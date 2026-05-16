@@ -809,6 +809,7 @@ function ExperienceA() {
       const nextReadingStep = readingSteps.find((step) => Number(step.id) > Number(stepId));
       const afterReadingRequest = {
         language: routeState.language ?? i18n.language,
+        companionName: t(`adaptive.companions.${markerStyle}`),
         currentCheckpointCount: checkpointCountsByStep[stepId] ?? recommendedCheckpointCount,
         scrollDirectionChanges: stats?.directionChanges ?? 0,
         probeResponse,

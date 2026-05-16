@@ -261,8 +261,8 @@ By continuing, you confirm that you have read and understood the information abo
         experience: {
           label: "Post Questionnaire",
           description: "Please answer the following questions.",
-          difference: "How did the two reading experiences differ for you, if at all?",
-          feedback: "Did either reading experience affect your concentration, motivation, or reading pace? Please explain.",
+          difference: "What differences, if any, did you notice between Reading Experience A and Reading Experience B in terms of the interface and/or on-screen features (not the text itself)?",
+          feedback: "How, if at all, did the Reading Companion influence the way you engaged with the reading task?",
         },
       },
       final:{
@@ -523,8 +523,8 @@ Al continuar, confirmas que has leído y entendido la información anterior, que
         experience: {
           label: "Cuestionario final",
           description: "Por favor, responde a las siguientes preguntas.",
-          difference: "¿En qué se diferenciaron para ti las dos experiencias de lectura, si es que notaste alguna diferencia?",
-          feedback: "¿Alguna de las experiencias de lectura afectó tu concentración, motivación o ritmo de lectura? Por favor, explícalo.",
+          difference: "¿Qué diferencias, si es que notaste alguna, observaste entre la Experiencia de Lectura A y la Experiencia de Lectura B en cuanto a la interfaz y/o las funcionalidades en pantalla (no el texto en sí)?",
+          feedback: "¿Cómo, si es que en algo, influyó el Compañero de Lectura en la forma en que te involucraste con la tarea de lectura?",
         },
       },
       final:{
@@ -786,8 +786,8 @@ En continuar, confirmes que has llegit i entès la informació anterior, que acc
         experience: {
           label: "Qüestionari final",
           description: "Si us plau, respon les preguntes següents.",
-          difference: "Com van diferir les dues experiències de lectura per a tu, si és que van diferir en alguna cosa?",
-          feedback: "Alguna de les experiències de lectura va afectar la teva concentració, motivació o ritme de lectura? Explica-ho, si us plau.",
+          difference: "Quines diferències, si és que en vas notar alguna, vas observar entre l’Experiència de Lectura A i l’Experiència de Lectura B pel que fa a la interfície i/o les funcionalitats en pantalla (no el text en si)?",
+          feedback: "Com, si és que en alguna cosa, el Compañero de Lectura va influir en la manera com et vas implicar en la tasca de lectura?",
         },
       },
       final:{
