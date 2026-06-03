@@ -30,6 +30,15 @@ body {
   min-height: 100vh;
 }
 
+#webgazerVideoContainer.webgazer-calibration-preview {
+  position: fixed !important;
+  width: 320px !important;
+  height: 240px !important;
+  overflow: visible !important;
+  transform: scale(0.5) !important;
+  transform-origin: top left !important;
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

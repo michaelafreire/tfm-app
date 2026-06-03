@@ -27,6 +27,37 @@ const VALIDATION_POINTS = [
 ];
 const VALIDATION_SAMPLES_PER_POINT = 12;
 const VALIDATION_SAMPLE_DELAY_MS = 80;
+const WEBGAZER_INTERNAL_PREVIEW_WIDTH = 320;
+const WEBGAZER_INTERNAL_PREVIEW_HEIGHT = 240;
+
+function positionWebGazerPreview() {
+  const videoContainer = document.getElementById("webgazerVideoContainer");
+
+  if (!videoContainer) return;
+
+  videoContainer.classList.add("webgazer-calibration-preview");
+  videoContainer.style.top = "16px";
+  videoContainer.style.left = "16px";
+  videoContainer.style.right = "auto";
+  videoContainer.style.width = `${WEBGAZER_INTERNAL_PREVIEW_WIDTH}px`;
+  videoContainer.style.height = `${WEBGAZER_INTERNAL_PREVIEW_HEIGHT}px`;
+  videoContainer.style.zIndex = "20";
+  videoContainer.style.pointerEvents = "none";
+}
+
+function resetWebGazerPreviewPosition() {
+  const videoContainer = document.getElementById("webgazerVideoContainer");
+
+  if (!videoContainer) return;
+
+  videoContainer.classList.remove("webgazer-calibration-preview");
+  videoContainer.style.top = "0px";
+  videoContainer.style.left = "0px";
+  videoContainer.style.right = "auto";
+  videoContainer.style.width = "";
+  videoContainer.style.height = "";
+  videoContainer.style.pointerEvents = "auto";
+}
 
 type CalibrationScore = {
   accuracyPercent: number;
@@ -79,14 +110,7 @@ function Calibration() {
             webgazer.showFaceOverlay(true);
             webgazer.showFaceFeedbackBox(true);
             webgazer.showPredictionPoints(false);
-            const videoContainer = document.getElementById("webgazerVideoContainer");
-            if (videoContainer) {
-              videoContainer.style.top = "16px";
-              videoContainer.style.left = "16px";
-              videoContainer.style.right = "auto";
-              videoContainer.style.zIndex = "20";
-              videoContainer.style.pointerEvents = "none";
-            }
+            positionWebGazerPreview();
             setIsPreparing(false);
             return;
           } catch (error) {
@@ -110,13 +134,7 @@ function Calibration() {
 
     return () => {
       cancelled = true;
-      const videoContainer = document.getElementById("webgazerVideoContainer");
-      if (videoContainer) {
-        videoContainer.style.top = "0px";
-        videoContainer.style.left = "0px";
-        videoContainer.style.right = "auto";
-        videoContainer.style.pointerEvents = "auto";
-      }
+      resetWebGazerPreviewPosition();
     };
   }, [t]);
 
@@ -294,13 +312,12 @@ function Calibration() {
   const clicksOnActivePoint =
     isComplete ? CLICKS_PER_POINT : (clickCount % CLICKS_PER_POINT);
   const topMessage = accuracy
-    ? `${t("calibration.accuracyMessage", { accuracy: accuracy.accuracyPercent, experience: nextExperienceName })} ${
-      t(
-        accuracy.accuracyPercent < 85
-          ? "calibration.recalibrateSuggestion"
-          : "calibration.continueSuggestion"
-      )
-    }`
+    ? t(
+      accuracy.accuracyPercent < 85
+        ? "calibration.accuracyNeedsRecalibration"
+        : "calibration.accuracyCanContinue",
+      { accuracy: accuracy.accuracyPercent, experience: nextExperienceName }
+    )
     : isScoring
       ? t("calibration.keepEyesFixed")
       : isPreparing
@@ -327,6 +344,7 @@ function Calibration() {
       >
         <Box
           sx={{
+            position: "relative",
             display: "flex",
             alignItems: "center",
             justifyContent: "flex-end",
@@ -338,12 +356,41 @@ function Calibration() {
         >
           <Box
             sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1,
+              width: "min(76vw, 760px)",
+              px: 2.5,
+              py: 1.5,
+              borderRadius: 3,
+              bgcolor: "background.paper",
+              boxShadow: "0 8px 30px rgba(38,42,44,0.08)",
+              textAlign: "center",
+              color: "text.primary",
+              pointerEvents: "none",
+            }}
+          >
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+              {topMessage}
+            </Typography>
+            {errorMessage ? (
+              <Typography variant="body2" sx={{ marginTop: 0.75, color: "error.main" }}>
+                {errorMessage}
+              </Typography>
+            ) : null}
+          </Box>
+
+          <Box
+            sx={{
               display: "flex",
               alignItems: "flex-end",
               justifyContent: "flex-end",
               gap: 1.5,
               flexWrap: "wrap",
               flex: 1,
+              zIndex: 2,
             }}
           >
             <Box
@@ -379,38 +426,6 @@ function Calibration() {
             boxShadow: 3,
           }}
         >
-          <Box
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 2,
-              width: "min(76vw, 760px)",
-              px: 2.5,
-              py: 1.5,
-              borderRadius: 3,
-              bgcolor: "background.paper",
-              boxShadow: "0 8px 30px rgba(38,42,44,0.08)",
-              textAlign: "center",
-              color: "text.primary",
-            }}
-          >
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              {topMessage}
-            </Typography>
-            {errorMessage ? (
-              <Typography variant="body2" sx={{ marginTop: 0.75, color: "error.main" }}>
-                {errorMessage}
-              </Typography>
-            ) : null}
-            {accuracy ? (
-              <Typography variant="body2" sx={{ marginTop: 0.75 }}>
-                {t("calibration.averageError", { pixels: accuracy.averageErrorPx })}
-              </Typography>
-            ) : null}
-          </Box>
-
           {CALIBRATION_POINTS.map((point, index) => {
             const isActive = index === activePointIndex && !isComplete;
             const isDone = index < completedPoints || isComplete;
